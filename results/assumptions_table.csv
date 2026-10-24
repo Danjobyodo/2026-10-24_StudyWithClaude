@@ -1,0 +1,15 @@
+id,item,status,basis / note
+A1,"Kobayashi switch-in rounds = ceil(kappa_in d), kappa_in=1",assumption,[KZH] states only O(d); [Dav] full text not accessible here
+A2,"Kobayashi FSC EC rounds after return = ceil(kappa_out d), kappa_out=1",assumption,[KZH] O(d)
+A3,"FSC |+_L> preparation rounds = ceil(kappa0 d), kappa0=1",assumption,not specified in [KZH]; Litinski counts patch init as 0 tau
+A4,Litinski 1 tau = d code cycles,literature,[Lit] Sec. 1
+A5,Every primitive gate / init / measurement = 1 time unit,assumption,parametrised (DUR)
+A6,Clifford stabilizers measured by ancilla-controlled-S (CNOT + CCZ) gadgets,our construction (validated),circuit not given in [KZH]; V9
+A7,Round schedule: commuting-class upper bound / busiest-qubit lower bound,our construction (validated),V10; optimised interleavings could be shorter
+A8,Frozen boundary qubits not allocated; gates on them dropped,counting rule,same rule for both codes
+A9,Litinski ancilla strip = 2d^2+1 qubits per tile (stim-validated increment); Z_m(x)Y_0 twist not laid out,approximation,M7
+A10,"Injection: 3+3 cycles per |m>, serial in the 11-tile layout",literature,"[Lit] App. A, Sec. 3.3 Caveat"
+A11,Classical processing / decoding latency = 0,assumption,both protocols
+U1,FSC -> standard rotated patch conversion,UNRESOLVED,excluded in B (lower bound); illustrative 1-tau value shown separately
+U2,D4-phase Knill-Laflamme distance for L >= 3,UNVERIFIED,only Z-type and X-shift distances computed
+U3,Fault tolerance of the switching (JIT decoder) and value of kappa,UNRESOLVED,requires noisy simulation (next stage)

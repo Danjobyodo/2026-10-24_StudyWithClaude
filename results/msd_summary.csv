@@ -1,0 +1,225 @@
+peak_qubits,rounds,time_lb,time_ub,V_qubit_round,V_qubit_time_lb,V_qubit_time_ub,V_peak_x_rounds_UB,gates,nonclifford,T_count_if_decomposed,protocol,d,model,comparison,level,gateset,data_only
+198,33,210.0,408,6534,41148.0,80352,6534,{},{},0,Litinski_15to1,3,FT_ref,A,tile,primitive,False
+198,33,210.0,408,6534,41148.0,80352,6534,{},{},0,Litinski_15to1,3,FT_ref,A,tile,clifford_t,False
+198,105,642.0,1272,18198,111132.0,220320,20790,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,3,FT_ref,B,tile,primitive,False
+198,105,642.0,1272,18198,111132.0,220320,20790,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,3,FT_ref,B,tile,clifford_t,False
+198,11,78.0,144,2178,15012.0,28080,2178,{},{},0,Litinski_15to1,3,NL_min,A,tile,primitive,False
+198,11,78.0,144,2178,15012.0,28080,2178,{},{},0,Litinski_15to1,3,NL_min,A,tile,clifford_t,False
+198,23,150.0,288,4122,26676.0,51408,4554,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,3,NL_min,B,tile,primitive,False
+198,23,150.0,288,4122,26676.0,51408,4554,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,3,NL_min,B,tile,clifford_t,False
+99,33,210.0,408,3267,20574.0,40176,3267,{},{},0,Litinski_15to1,3,FT_ref,A,tile,primitive,True
+99,33,210.0,408,3267,20574.0,40176,3267,{},{},0,Litinski_15to1,3,FT_ref,A,tile,clifford_t,True
+99,105,642.0,1272,9099,55566.0,110160,10395,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,3,FT_ref,B,tile,primitive,True
+99,105,642.0,1272,9099,55566.0,110160,10395,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,3,FT_ref,B,tile,clifford_t,True
+99,11,78.0,144,1089,7506.0,14040,1089,{},{},0,Litinski_15to1,3,NL_min,A,tile,primitive,True
+99,11,78.0,144,1089,7506.0,14040,1089,{},{},0,Litinski_15to1,3,NL_min,A,tile,clifford_t,True
+99,23,150.0,288,2061,13338.0,25704,2277,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,3,NL_min,B,tile,primitive,True
+99,23,150.0,288,2061,13338.0,25704,2277,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,3,NL_min,B,tile,clifford_t,True
+193,33,210.0,408,6369,40074.0,78288,6369,"{""CNOT"": 9900.0}",{},0,Litinski_15to1,3,FT_ref,A,physical,primitive,False
+193,33,210.0,408,6369,40074.0,78288,6369,"{""CNOT"": 9900.0}",{},0,Litinski_15to1,3,FT_ref,A,physical,clifford_t,False
+193,105,642.0,1272,17529,107034.0,212208,20265,"{""T"": 15.0, ""CNOT"": 9900.0}","{""T"": 15.0}",15,Litinski_15to1,3,FT_ref,B,physical,primitive,False
+193,105,642.0,1272,17529,107034.0,212208,20265,"{""T"": 15.0, ""CNOT"": 9900.0}","{""T"": 15.0}",15,Litinski_15to1,3,FT_ref,B,physical,clifford_t,False
+193,11,78.0,144,2123,14598.0,27336,2123,"{""CNOT"": 3300.0}",{},0,Litinski_15to1,3,NL_min,A,physical,primitive,False
+193,11,78.0,144,2123,14598.0,27336,2123,"{""CNOT"": 3300.0}",{},0,Litinski_15to1,3,NL_min,A,physical,clifford_t,False
+193,23,150.0,288,3983,25758.0,49656,4439,"{""T"": 15.0, ""CNOT"": 3300.0}","{""T"": 15.0}",15,Litinski_15to1,3,NL_min,B,physical,primitive,False
+193,23,150.0,288,3983,25758.0,49656,4439,"{""T"": 15.0, ""CNOT"": 3300.0}","{""T"": 15.0}",15,Litinski_15to1,3,NL_min,B,physical,clifford_t,False
+99,33,210.0,408,3267,20574.0,40176,3267,"{""CNOT"": 9900.0}",{},0,Litinski_15to1,3,FT_ref,A,physical,primitive,True
+99,33,210.0,408,3267,20574.0,40176,3267,"{""CNOT"": 9900.0}",{},0,Litinski_15to1,3,FT_ref,A,physical,clifford_t,True
+99,105,642.0,1272,9099,55566.0,110160,10395,"{""T"": 15.0, ""CNOT"": 9900.0}","{""T"": 15.0}",15,Litinski_15to1,3,FT_ref,B,physical,primitive,True
+99,105,642.0,1272,9099,55566.0,110160,10395,"{""T"": 15.0, ""CNOT"": 9900.0}","{""T"": 15.0}",15,Litinski_15to1,3,FT_ref,B,physical,clifford_t,True
+99,11,78.0,144,1089,7506.0,14040,1089,"{""CNOT"": 3300.0}",{},0,Litinski_15to1,3,NL_min,A,physical,primitive,True
+99,11,78.0,144,1089,7506.0,14040,1089,"{""CNOT"": 3300.0}",{},0,Litinski_15to1,3,NL_min,A,physical,clifford_t,True
+99,23,150.0,288,2061,13338.0,25704,2277,"{""T"": 15.0, ""CNOT"": 3300.0}","{""T"": 15.0}",15,Litinski_15to1,3,NL_min,B,physical,primitive,True
+99,23,150.0,288,2061,13338.0,25704,2277,"{""T"": 15.0, ""CNOT"": 3300.0}","{""T"": 15.0}",15,Litinski_15to1,3,NL_min,B,physical,clifford_t,True
+550,55,342.0,672,30250,186900.0,368400,30250,{},{},0,Litinski_15to1,5,FT_ref,A,tile,primitive,False
+550,55,342.0,672,30250,186900.0,368400,30250,{},{},0,Litinski_15to1,5,FT_ref,A,tile,clifford_t,False
+550,127,774.0,1536,62650,381300.0,757200,69850,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,5,FT_ref,B,tile,primitive,False
+550,127,774.0,1536,62650,381300.0,757200,69850,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,5,FT_ref,B,tile,clifford_t,False
+550,11,78.0,144,6050,41700.0,78000,6050,{},{},0,Litinski_15to1,5,NL_min,A,tile,primitive,False
+550,11,78.0,144,6050,41700.0,78000,6050,{},{},0,Litinski_15to1,5,NL_min,A,tile,clifford_t,False
+550,23,150.0,288,11450,74100.0,142800,12650,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,5,NL_min,B,tile,primitive,False
+550,23,150.0,288,11450,74100.0,142800,12650,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,5,NL_min,B,tile,clifford_t,False
+275,55,342.0,672,15125,93450.0,184200,15125,{},{},0,Litinski_15to1,5,FT_ref,A,tile,primitive,True
+275,55,342.0,672,15125,93450.0,184200,15125,{},{},0,Litinski_15to1,5,FT_ref,A,tile,clifford_t,True
+275,127,774.0,1536,31325,190650.0,378600,34925,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,5,FT_ref,B,tile,primitive,True
+275,127,774.0,1536,31325,190650.0,378600,34925,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,5,FT_ref,B,tile,clifford_t,True
+275,11,78.0,144,3025,20850.0,39000,3025,{},{},0,Litinski_15to1,5,NL_min,A,tile,primitive,True
+275,11,78.0,144,3025,20850.0,39000,3025,{},{},0,Litinski_15to1,5,NL_min,A,tile,clifford_t,True
+275,23,150.0,288,5725,37050.0,71400,6325,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,5,NL_min,B,tile,primitive,True
+275,23,150.0,288,5725,37050.0,71400,6325,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,5,NL_min,B,tile,clifford_t,True
+545,55,342.0,672,29975,185166.0,365016,29975,"{""CNOT"": 51700.0}",{},0,Litinski_15to1,5,FT_ref,A,physical,primitive,False
+545,55,342.0,672,29975,185166.0,365016,29975,"{""CNOT"": 51700.0}",{},0,Litinski_15to1,5,FT_ref,A,physical,clifford_t,False
+545,127,774.0,1536,61871,376542.0,747768,69215,"{""T"": 15.0, ""CNOT"": 51700.0}","{""T"": 15.0}",15,Litinski_15to1,5,FT_ref,B,physical,primitive,False
+545,127,774.0,1536,61871,376542.0,747768,69215,"{""T"": 15.0, ""CNOT"": 51700.0}","{""T"": 15.0}",15,Litinski_15to1,5,FT_ref,B,physical,clifford_t,False
+545,11,78.0,144,5995,41286.0,77256,5995,"{""CNOT"": 10340.0}",{},0,Litinski_15to1,5,NL_min,A,physical,primitive,False
+545,11,78.0,144,5995,41286.0,77256,5995,"{""CNOT"": 10340.0}",{},0,Litinski_15to1,5,NL_min,A,physical,clifford_t,False
+545,23,150.0,288,11311,73182.0,141048,12535,"{""T"": 15.0, ""CNOT"": 10340.0}","{""T"": 15.0}",15,Litinski_15to1,5,NL_min,B,physical,primitive,False
+545,23,150.0,288,11311,73182.0,141048,12535,"{""T"": 15.0, ""CNOT"": 10340.0}","{""T"": 15.0}",15,Litinski_15to1,5,NL_min,B,physical,clifford_t,False
+275,55,342.0,672,15125,93450.0,184200,15125,"{""CNOT"": 51700.0}",{},0,Litinski_15to1,5,FT_ref,A,physical,primitive,True
+275,55,342.0,672,15125,93450.0,184200,15125,"{""CNOT"": 51700.0}",{},0,Litinski_15to1,5,FT_ref,A,physical,clifford_t,True
+275,127,774.0,1536,31325,190650.0,378600,34925,"{""T"": 15.0, ""CNOT"": 51700.0}","{""T"": 15.0}",15,Litinski_15to1,5,FT_ref,B,physical,primitive,True
+275,127,774.0,1536,31325,190650.0,378600,34925,"{""T"": 15.0, ""CNOT"": 51700.0}","{""T"": 15.0}",15,Litinski_15to1,5,FT_ref,B,physical,clifford_t,True
+275,11,78.0,144,3025,20850.0,39000,3025,"{""CNOT"": 10340.0}",{},0,Litinski_15to1,5,NL_min,A,physical,primitive,True
+275,11,78.0,144,3025,20850.0,39000,3025,"{""CNOT"": 10340.0}",{},0,Litinski_15to1,5,NL_min,A,physical,clifford_t,True
+275,23,150.0,288,5725,37050.0,71400,6325,"{""T"": 15.0, ""CNOT"": 10340.0}","{""T"": 15.0}",15,Litinski_15to1,5,NL_min,B,physical,primitive,True
+275,23,150.0,288,5725,37050.0,71400,6325,"{""T"": 15.0, ""CNOT"": 10340.0}","{""T"": 15.0}",15,Litinski_15to1,5,NL_min,B,physical,clifford_t,True
+1078,77,474.0,936,83006,508620.0,1006656,83006,{},{},0,Litinski_15to1,7,FT_ref,A,tile,primitive,False
+1078,77,474.0,936,83006,508620.0,1006656,83006,{},{},0,Litinski_15to1,7,FT_ref,A,tile,clifford_t,False
+1078,149,906.0,1800,146510,889644.0,1768704,160622,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,7,FT_ref,B,tile,primitive,False
+1078,149,906.0,1800,146510,889644.0,1768704,160622,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,7,FT_ref,B,tile,clifford_t,False
+1078,11,78.0,144,11858,81732.0,152880,11858,{},{},0,Litinski_15to1,7,NL_min,A,tile,primitive,False
+1078,11,78.0,144,11858,81732.0,152880,11858,{},{},0,Litinski_15to1,7,NL_min,A,tile,clifford_t,False
+1078,23,150.0,288,22442,145236.0,279888,24794,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,7,NL_min,B,tile,primitive,False
+1078,23,150.0,288,22442,145236.0,279888,24794,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,7,NL_min,B,tile,clifford_t,False
+539,77,474.0,936,41503,254310.0,503328,41503,{},{},0,Litinski_15to1,7,FT_ref,A,tile,primitive,True
+539,77,474.0,936,41503,254310.0,503328,41503,{},{},0,Litinski_15to1,7,FT_ref,A,tile,clifford_t,True
+539,149,906.0,1800,73255,444822.0,884352,80311,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,7,FT_ref,B,tile,primitive,True
+539,149,906.0,1800,73255,444822.0,884352,80311,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,7,FT_ref,B,tile,clifford_t,True
+539,11,78.0,144,5929,40866.0,76440,5929,{},{},0,Litinski_15to1,7,NL_min,A,tile,primitive,True
+539,11,78.0,144,5929,40866.0,76440,5929,{},{},0,Litinski_15to1,7,NL_min,A,tile,clifford_t,True
+539,23,150.0,288,11221,72618.0,139944,12397,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,7,NL_min,B,tile,primitive,True
+539,23,150.0,288,11221,72618.0,139944,12397,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,7,NL_min,B,tile,clifford_t,True
+1073,77,474.0,936,82621,506226.0,1001952,82621,"{""CNOT"": 148764.0}",{},0,Litinski_15to1,7,FT_ref,A,physical,primitive,False
+1073,77,474.0,936,82621,506226.0,1001952,82621,"{""CNOT"": 148764.0}",{},0,Litinski_15to1,7,FT_ref,A,physical,clifford_t,False
+1073,149,906.0,1800,145621,884226.0,1757952,159877,"{""T"": 15.0, ""CNOT"": 148764.0}","{""T"": 15.0}",15,Litinski_15to1,7,FT_ref,B,physical,primitive,False
+1073,149,906.0,1800,145621,884226.0,1757952,159877,"{""T"": 15.0, ""CNOT"": 148764.0}","{""T"": 15.0}",15,Litinski_15to1,7,FT_ref,B,physical,clifford_t,False
+1073,11,78.0,144,11803,81318.0,152136,11803,"{""CNOT"": 21252.0}",{},0,Litinski_15to1,7,NL_min,A,physical,primitive,False
+1073,11,78.0,144,11803,81318.0,152136,11803,"{""CNOT"": 21252.0}",{},0,Litinski_15to1,7,NL_min,A,physical,clifford_t,False
+1073,23,150.0,288,22303,144318.0,278136,24679,"{""T"": 15.0, ""CNOT"": 21252.0}","{""T"": 15.0}",15,Litinski_15to1,7,NL_min,B,physical,primitive,False
+1073,23,150.0,288,22303,144318.0,278136,24679,"{""T"": 15.0, ""CNOT"": 21252.0}","{""T"": 15.0}",15,Litinski_15to1,7,NL_min,B,physical,clifford_t,False
+539,77,474.0,936,41503,254310.0,503328,41503,"{""CNOT"": 148764.0}",{},0,Litinski_15to1,7,FT_ref,A,physical,primitive,True
+539,77,474.0,936,41503,254310.0,503328,41503,"{""CNOT"": 148764.0}",{},0,Litinski_15to1,7,FT_ref,A,physical,clifford_t,True
+539,149,906.0,1800,73255,444822.0,884352,80311,"{""T"": 15.0, ""CNOT"": 148764.0}","{""T"": 15.0}",15,Litinski_15to1,7,FT_ref,B,physical,primitive,True
+539,149,906.0,1800,73255,444822.0,884352,80311,"{""T"": 15.0, ""CNOT"": 148764.0}","{""T"": 15.0}",15,Litinski_15to1,7,FT_ref,B,physical,clifford_t,True
+539,11,78.0,144,5929,40866.0,76440,5929,"{""CNOT"": 21252.0}",{},0,Litinski_15to1,7,NL_min,A,physical,primitive,True
+539,11,78.0,144,5929,40866.0,76440,5929,"{""CNOT"": 21252.0}",{},0,Litinski_15to1,7,NL_min,A,physical,clifford_t,True
+539,23,150.0,288,11221,72618.0,139944,12397,"{""T"": 15.0, ""CNOT"": 21252.0}","{""T"": 15.0}",15,Litinski_15to1,7,NL_min,B,physical,primitive,True
+539,23,150.0,288,11221,72618.0,139944,12397,"{""T"": 15.0, ""CNOT"": 21252.0}","{""T"": 15.0}",15,Litinski_15to1,7,NL_min,B,physical,clifford_t,True
+1782,99,606.0,1200,176418,1076004.0,2134512,176418,{},{},0,Litinski_15to1,9,FT_ref,A,tile,primitive,False
+1782,99,606.0,1200,176418,1076004.0,2134512,176418,{},{},0,Litinski_15to1,9,FT_ref,A,tile,clifford_t,False
+1782,171,1038.0,2064,281394,1705860.0,3394224,304722,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,9,FT_ref,B,tile,primitive,False
+1782,171,1038.0,2064,281394,1705860.0,3394224,304722,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,9,FT_ref,B,tile,clifford_t,False
+1782,11,78.0,144,19602,135108.0,252720,19602,{},{},0,Litinski_15to1,9,NL_min,A,tile,primitive,False
+1782,11,78.0,144,19602,135108.0,252720,19602,{},{},0,Litinski_15to1,9,NL_min,A,tile,clifford_t,False
+1782,23,150.0,288,37098,240084.0,462672,40986,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,9,NL_min,B,tile,primitive,False
+1782,23,150.0,288,37098,240084.0,462672,40986,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,9,NL_min,B,tile,clifford_t,False
+891,99,606.0,1200,88209,538002.0,1067256,88209,{},{},0,Litinski_15to1,9,FT_ref,A,tile,primitive,True
+891,99,606.0,1200,88209,538002.0,1067256,88209,{},{},0,Litinski_15to1,9,FT_ref,A,tile,clifford_t,True
+891,171,1038.0,2064,140697,852930.0,1697112,152361,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,9,FT_ref,B,tile,primitive,True
+891,171,1038.0,2064,140697,852930.0,1697112,152361,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,9,FT_ref,B,tile,clifford_t,True
+891,11,78.0,144,9801,67554.0,126360,9801,{},{},0,Litinski_15to1,9,NL_min,A,tile,primitive,True
+891,11,78.0,144,9801,67554.0,126360,9801,{},{},0,Litinski_15to1,9,NL_min,A,tile,clifford_t,True
+891,23,150.0,288,18549,120042.0,231336,20493,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,9,NL_min,B,tile,primitive,True
+891,23,150.0,288,18549,120042.0,231336,20493,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,9,NL_min,B,tile,clifford_t,True
+1777,99,606.0,1200,175923,1072950.0,2128488,175923,"{""CNOT"": 324324.0}",{},0,Litinski_15to1,9,FT_ref,A,physical,primitive,False
+1777,99,606.0,1200,175923,1072950.0,2128488,175923,"{""CNOT"": 324324.0}",{},0,Litinski_15to1,9,FT_ref,A,physical,clifford_t,False
+1777,171,1038.0,2064,280395,1699782.0,3382152,303867,"{""T"": 15.0, ""CNOT"": 324324.0}","{""T"": 15.0}",15,Litinski_15to1,9,FT_ref,B,physical,primitive,False
+1777,171,1038.0,2064,280395,1699782.0,3382152,303867,"{""T"": 15.0, ""CNOT"": 324324.0}","{""T"": 15.0}",15,Litinski_15to1,9,FT_ref,B,physical,clifford_t,False
+1777,11,78.0,144,19547,134694.0,251976,19547,"{""CNOT"": 36036.0}",{},0,Litinski_15to1,9,NL_min,A,physical,primitive,False
+1777,11,78.0,144,19547,134694.0,251976,19547,"{""CNOT"": 36036.0}",{},0,Litinski_15to1,9,NL_min,A,physical,clifford_t,False
+1777,23,150.0,288,36959,239166.0,460920,40871,"{""T"": 15.0, ""CNOT"": 36036.0}","{""T"": 15.0}",15,Litinski_15to1,9,NL_min,B,physical,primitive,False
+1777,23,150.0,288,36959,239166.0,460920,40871,"{""T"": 15.0, ""CNOT"": 36036.0}","{""T"": 15.0}",15,Litinski_15to1,9,NL_min,B,physical,clifford_t,False
+891,99,606.0,1200,88209,538002.0,1067256,88209,"{""CNOT"": 324324.0}",{},0,Litinski_15to1,9,FT_ref,A,physical,primitive,True
+891,99,606.0,1200,88209,538002.0,1067256,88209,"{""CNOT"": 324324.0}",{},0,Litinski_15to1,9,FT_ref,A,physical,clifford_t,True
+891,171,1038.0,2064,140697,852930.0,1697112,152361,"{""T"": 15.0, ""CNOT"": 324324.0}","{""T"": 15.0}",15,Litinski_15to1,9,FT_ref,B,physical,primitive,True
+891,171,1038.0,2064,140697,852930.0,1697112,152361,"{""T"": 15.0, ""CNOT"": 324324.0}","{""T"": 15.0}",15,Litinski_15to1,9,FT_ref,B,physical,clifford_t,True
+891,11,78.0,144,9801,67554.0,126360,9801,"{""CNOT"": 36036.0}",{},0,Litinski_15to1,9,NL_min,A,physical,primitive,True
+891,11,78.0,144,9801,67554.0,126360,9801,"{""CNOT"": 36036.0}",{},0,Litinski_15to1,9,NL_min,A,physical,clifford_t,True
+891,23,150.0,288,18549,120042.0,231336,20493,"{""T"": 15.0, ""CNOT"": 36036.0}","{""T"": 15.0}",15,Litinski_15to1,9,NL_min,B,physical,primitive,True
+891,23,150.0,288,18549,120042.0,231336,20493,"{""T"": 15.0, ""CNOT"": 36036.0}","{""T"": 15.0}",15,Litinski_15to1,9,NL_min,B,physical,clifford_t,True
+2662,121,738.0,1464,322102,1958748.0,3891360,322102,{},{},0,Litinski_15to1,11,FT_ref,A,tile,primitive,False
+2662,121,738.0,1464,322102,1958748.0,3891360,322102,{},{},0,Litinski_15to1,11,FT_ref,A,tile,clifford_t,False
+2662,193,1170.0,2328,478918,2899644.0,5773152,513766,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,11,FT_ref,B,tile,primitive,False
+2662,193,1170.0,2328,478918,2899644.0,5773152,513766,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,11,FT_ref,B,tile,clifford_t,False
+2662,11,78.0,144,29282,201828.0,377520,29282,{},{},0,Litinski_15to1,11,NL_min,A,tile,primitive,False
+2662,11,78.0,144,29282,201828.0,377520,29282,{},{},0,Litinski_15to1,11,NL_min,A,tile,clifford_t,False
+2662,23,150.0,288,55418,358644.0,691152,61226,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,11,NL_min,B,tile,primitive,False
+2662,23,150.0,288,55418,358644.0,691152,61226,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,11,NL_min,B,tile,clifford_t,False
+1331,121,738.0,1464,161051,979374.0,1945680,161051,{},{},0,Litinski_15to1,11,FT_ref,A,tile,primitive,True
+1331,121,738.0,1464,161051,979374.0,1945680,161051,{},{},0,Litinski_15to1,11,FT_ref,A,tile,clifford_t,True
+1331,193,1170.0,2328,239459,1449822.0,2886576,256883,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,11,FT_ref,B,tile,primitive,True
+1331,193,1170.0,2328,239459,1449822.0,2886576,256883,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,11,FT_ref,B,tile,clifford_t,True
+1331,11,78.0,144,14641,100914.0,188760,14641,{},{},0,Litinski_15to1,11,NL_min,A,tile,primitive,True
+1331,11,78.0,144,14641,100914.0,188760,14641,{},{},0,Litinski_15to1,11,NL_min,A,tile,clifford_t,True
+1331,23,150.0,288,27709,179322.0,345576,30613,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,11,NL_min,B,tile,primitive,True
+1331,23,150.0,288,27709,179322.0,345576,30613,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,11,NL_min,B,tile,clifford_t,True
+2657,121,738.0,1464,321497,1955034.0,3884016,321497,"{""CNOT"": 601612.0}",{},0,Litinski_15to1,11,FT_ref,A,physical,primitive,False
+2657,121,738.0,1464,321497,1955034.0,3884016,321497,"{""CNOT"": 601612.0}",{},0,Litinski_15to1,11,FT_ref,A,physical,clifford_t,False
+2657,193,1170.0,2328,477809,2892906.0,5759760,512801,"{""T"": 15.0, ""CNOT"": 601612.0}","{""T"": 15.0}",15,Litinski_15to1,11,FT_ref,B,physical,primitive,False
+2657,193,1170.0,2328,477809,2892906.0,5759760,512801,"{""T"": 15.0, ""CNOT"": 601612.0}","{""T"": 15.0}",15,Litinski_15to1,11,FT_ref,B,physical,clifford_t,False
+2657,11,78.0,144,29227,201414.0,376776,29227,"{""CNOT"": 54692.0}",{},0,Litinski_15to1,11,NL_min,A,physical,primitive,False
+2657,11,78.0,144,29227,201414.0,376776,29227,"{""CNOT"": 54692.0}",{},0,Litinski_15to1,11,NL_min,A,physical,clifford_t,False
+2657,23,150.0,288,55279,357726.0,689400,61111,"{""T"": 15.0, ""CNOT"": 54692.0}","{""T"": 15.0}",15,Litinski_15to1,11,NL_min,B,physical,primitive,False
+2657,23,150.0,288,55279,357726.0,689400,61111,"{""T"": 15.0, ""CNOT"": 54692.0}","{""T"": 15.0}",15,Litinski_15to1,11,NL_min,B,physical,clifford_t,False
+1331,121,738.0,1464,161051,979374.0,1945680,161051,"{""CNOT"": 601612.0}",{},0,Litinski_15to1,11,FT_ref,A,physical,primitive,True
+1331,121,738.0,1464,161051,979374.0,1945680,161051,"{""CNOT"": 601612.0}",{},0,Litinski_15to1,11,FT_ref,A,physical,clifford_t,True
+1331,193,1170.0,2328,239459,1449822.0,2886576,256883,"{""T"": 15.0, ""CNOT"": 601612.0}","{""T"": 15.0}",15,Litinski_15to1,11,FT_ref,B,physical,primitive,True
+1331,193,1170.0,2328,239459,1449822.0,2886576,256883,"{""T"": 15.0, ""CNOT"": 601612.0}","{""T"": 15.0}",15,Litinski_15to1,11,FT_ref,B,physical,clifford_t,True
+1331,11,78.0,144,14641,100914.0,188760,14641,"{""CNOT"": 54692.0}",{},0,Litinski_15to1,11,NL_min,A,physical,primitive,True
+1331,11,78.0,144,14641,100914.0,188760,14641,"{""CNOT"": 54692.0}",{},0,Litinski_15to1,11,NL_min,A,physical,clifford_t,True
+1331,23,150.0,288,27709,179322.0,345576,30613,"{""T"": 15.0, ""CNOT"": 54692.0}","{""T"": 15.0}",15,Litinski_15to1,11,NL_min,B,physical,primitive,True
+1331,23,150.0,288,27709,179322.0,345576,30613,"{""T"": 15.0, ""CNOT"": 54692.0}","{""T"": 15.0}",15,Litinski_15to1,11,NL_min,B,physical,clifford_t,True
+3718,143,870.0,1728,531674,3226548.0,6416592,531674,{},{},0,Litinski_15to1,13,FT_ref,A,tile,primitive,False
+3718,143,870.0,1728,531674,3226548.0,6416592,531674,{},{},0,Litinski_15to1,13,FT_ref,A,tile,clifford_t,False
+3718,215,1302.0,2592,750698,4540692.0,9044880,799370,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,13,FT_ref,B,tile,primitive,False
+3718,215,1302.0,2592,750698,4540692.0,9044880,799370,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,13,FT_ref,B,tile,clifford_t,False
+3718,11,78.0,144,40898,281892.0,527280,40898,{},{},0,Litinski_15to1,13,NL_min,A,tile,primitive,False
+3718,11,78.0,144,40898,281892.0,527280,40898,{},{},0,Litinski_15to1,13,NL_min,A,tile,clifford_t,False
+3718,23,150.0,288,77402,500916.0,965328,85514,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,13,NL_min,B,tile,primitive,False
+3718,23,150.0,288,77402,500916.0,965328,85514,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,13,NL_min,B,tile,clifford_t,False
+1859,143,870.0,1728,265837,1613274.0,3208296,265837,{},{},0,Litinski_15to1,13,FT_ref,A,tile,primitive,True
+1859,143,870.0,1728,265837,1613274.0,3208296,265837,{},{},0,Litinski_15to1,13,FT_ref,A,tile,clifford_t,True
+1859,215,1302.0,2592,375349,2270346.0,4522440,399685,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,13,FT_ref,B,tile,primitive,True
+1859,215,1302.0,2592,375349,2270346.0,4522440,399685,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,13,FT_ref,B,tile,clifford_t,True
+1859,11,78.0,144,20449,140946.0,263640,20449,{},{},0,Litinski_15to1,13,NL_min,A,tile,primitive,True
+1859,11,78.0,144,20449,140946.0,263640,20449,{},{},0,Litinski_15to1,13,NL_min,A,tile,clifford_t,True
+1859,23,150.0,288,38701,250458.0,482664,42757,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,13,NL_min,B,tile,primitive,True
+1859,23,150.0,288,38701,250458.0,482664,42757,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,13,NL_min,B,tile,clifford_t,True
+3713,143,870.0,1728,530959,3222174.0,6407928,530959,"{""CNOT"": 1003860.0}",{},0,Litinski_15to1,13,FT_ref,A,physical,primitive,False
+3713,143,870.0,1728,530959,3222174.0,6407928,530959,"{""CNOT"": 1003860.0}",{},0,Litinski_15to1,13,FT_ref,A,physical,clifford_t,False
+3713,215,1302.0,2592,749479,4533294.0,9030168,798295,"{""T"": 15.0, ""CNOT"": 1003860.0}","{""T"": 15.0}",15,Litinski_15to1,13,FT_ref,B,physical,primitive,False
+3713,215,1302.0,2592,749479,4533294.0,9030168,798295,"{""T"": 15.0, ""CNOT"": 1003860.0}","{""T"": 15.0}",15,Litinski_15to1,13,FT_ref,B,physical,clifford_t,False
+3713,11,78.0,144,40843,281478.0,526536,40843,"{""CNOT"": 77220.0}",{},0,Litinski_15to1,13,NL_min,A,physical,primitive,False
+3713,11,78.0,144,40843,281478.0,526536,40843,"{""CNOT"": 77220.0}",{},0,Litinski_15to1,13,NL_min,A,physical,clifford_t,False
+3713,23,150.0,288,77263,499998.0,963576,85399,"{""T"": 15.0, ""CNOT"": 77220.0}","{""T"": 15.0}",15,Litinski_15to1,13,NL_min,B,physical,primitive,False
+3713,23,150.0,288,77263,499998.0,963576,85399,"{""T"": 15.0, ""CNOT"": 77220.0}","{""T"": 15.0}",15,Litinski_15to1,13,NL_min,B,physical,clifford_t,False
+1859,143,870.0,1728,265837,1613274.0,3208296,265837,"{""CNOT"": 1003860.0}",{},0,Litinski_15to1,13,FT_ref,A,physical,primitive,True
+1859,143,870.0,1728,265837,1613274.0,3208296,265837,"{""CNOT"": 1003860.0}",{},0,Litinski_15to1,13,FT_ref,A,physical,clifford_t,True
+1859,215,1302.0,2592,375349,2270346.0,4522440,399685,"{""T"": 15.0, ""CNOT"": 1003860.0}","{""T"": 15.0}",15,Litinski_15to1,13,FT_ref,B,physical,primitive,True
+1859,215,1302.0,2592,375349,2270346.0,4522440,399685,"{""T"": 15.0, ""CNOT"": 1003860.0}","{""T"": 15.0}",15,Litinski_15to1,13,FT_ref,B,physical,clifford_t,True
+1859,11,78.0,144,20449,140946.0,263640,20449,"{""CNOT"": 77220.0}",{},0,Litinski_15to1,13,NL_min,A,physical,primitive,True
+1859,11,78.0,144,20449,140946.0,263640,20449,"{""CNOT"": 77220.0}",{},0,Litinski_15to1,13,NL_min,A,physical,clifford_t,True
+1859,23,150.0,288,38701,250458.0,482664,42757,"{""T"": 15.0, ""CNOT"": 77220.0}","{""T"": 15.0}",15,Litinski_15to1,13,NL_min,B,physical,primitive,True
+1859,23,150.0,288,38701,250458.0,482664,42757,"{""T"": 15.0, ""CNOT"": 77220.0}","{""T"": 15.0}",15,Litinski_15to1,13,NL_min,B,physical,clifford_t,True
+4950,165,1002.0,1992,816750,4949100.0,9849600,816750,{},{},0,Litinski_15to1,15,FT_ref,A,tile,primitive,False
+4950,165,1002.0,1992,816750,4949100.0,9849600,816750,{},{},0,Litinski_15to1,15,FT_ref,A,tile,clifford_t,False
+4950,237,1434.0,2856,1108350,6698700.0,13348800,1173150,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,15,FT_ref,B,tile,primitive,False
+4950,237,1434.0,2856,1108350,6698700.0,13348800,1173150,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,15,FT_ref,B,tile,clifford_t,False
+4950,11,78.0,144,54450,375300.0,702000,54450,{},{},0,Litinski_15to1,15,NL_min,A,tile,primitive,False
+4950,11,78.0,144,54450,375300.0,702000,54450,{},{},0,Litinski_15to1,15,NL_min,A,tile,clifford_t,False
+4950,23,150.0,288,103050,666900.0,1285200,113850,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,15,NL_min,B,tile,primitive,False
+4950,23,150.0,288,103050,666900.0,1285200,113850,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,15,NL_min,B,tile,clifford_t,False
+2475,165,1002.0,1992,408375,2474550.0,4924800,408375,{},{},0,Litinski_15to1,15,FT_ref,A,tile,primitive,True
+2475,165,1002.0,1992,408375,2474550.0,4924800,408375,{},{},0,Litinski_15to1,15,FT_ref,A,tile,clifford_t,True
+2475,237,1434.0,2856,554175,3349350.0,6674400,586575,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,15,FT_ref,B,tile,primitive,True
+2475,237,1434.0,2856,554175,3349350.0,6674400,586575,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,15,FT_ref,B,tile,clifford_t,True
+2475,11,78.0,144,27225,187650.0,351000,27225,{},{},0,Litinski_15to1,15,NL_min,A,tile,primitive,True
+2475,11,78.0,144,27225,187650.0,351000,27225,{},{},0,Litinski_15to1,15,NL_min,A,tile,clifford_t,True
+2475,23,150.0,288,51525,333450.0,642600,56925,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,15,NL_min,B,tile,primitive,True
+2475,23,150.0,288,51525,333450.0,642600,56925,"{""T"": 15.0}","{""T"": 15.0}",15,Litinski_15to1,15,NL_min,B,tile,clifford_t,True
+4945,165,1002.0,1992,815925,4944066.0,9839616,815925,"{""CNOT"": 1554300.0}",{},0,Litinski_15to1,15,FT_ref,A,physical,primitive,False
+4945,165,1002.0,1992,815925,4944066.0,9839616,815925,"{""CNOT"": 1554300.0}",{},0,Litinski_15to1,15,FT_ref,A,physical,clifford_t,False
+4945,237,1434.0,2856,1107021,6690642.0,13332768,1171965,"{""T"": 15.0, ""CNOT"": 1554300.0}","{""T"": 15.0}",15,Litinski_15to1,15,FT_ref,B,physical,primitive,False
+4945,237,1434.0,2856,1107021,6690642.0,13332768,1171965,"{""T"": 15.0, ""CNOT"": 1554300.0}","{""T"": 15.0}",15,Litinski_15to1,15,FT_ref,B,physical,clifford_t,False
+4945,11,78.0,144,54395,374886.0,701256,54395,"{""CNOT"": 103620.0}",{},0,Litinski_15to1,15,NL_min,A,physical,primitive,False
+4945,11,78.0,144,54395,374886.0,701256,54395,"{""CNOT"": 103620.0}",{},0,Litinski_15to1,15,NL_min,A,physical,clifford_t,False
+4945,23,150.0,288,102911,665982.0,1283448,113735,"{""T"": 15.0, ""CNOT"": 103620.0}","{""T"": 15.0}",15,Litinski_15to1,15,NL_min,B,physical,primitive,False
+4945,23,150.0,288,102911,665982.0,1283448,113735,"{""T"": 15.0, ""CNOT"": 103620.0}","{""T"": 15.0}",15,Litinski_15to1,15,NL_min,B,physical,clifford_t,False
+2475,165,1002.0,1992,408375,2474550.0,4924800,408375,"{""CNOT"": 1554300.0}",{},0,Litinski_15to1,15,FT_ref,A,physical,primitive,True
+2475,165,1002.0,1992,408375,2474550.0,4924800,408375,"{""CNOT"": 1554300.0}",{},0,Litinski_15to1,15,FT_ref,A,physical,clifford_t,True
+2475,237,1434.0,2856,554175,3349350.0,6674400,586575,"{""T"": 15.0, ""CNOT"": 1554300.0}","{""T"": 15.0}",15,Litinski_15to1,15,FT_ref,B,physical,primitive,True
+2475,237,1434.0,2856,554175,3349350.0,6674400,586575,"{""T"": 15.0, ""CNOT"": 1554300.0}","{""T"": 15.0}",15,Litinski_15to1,15,FT_ref,B,physical,clifford_t,True
+2475,11,78.0,144,27225,187650.0,351000,27225,"{""CNOT"": 103620.0}",{},0,Litinski_15to1,15,NL_min,A,physical,primitive,True
+2475,11,78.0,144,27225,187650.0,351000,27225,"{""CNOT"": 103620.0}",{},0,Litinski_15to1,15,NL_min,A,physical,clifford_t,True
+2475,23,150.0,288,51525,333450.0,642600,56925,"{""T"": 15.0, ""CNOT"": 103620.0}","{""T"": 15.0}",15,Litinski_15to1,15,NL_min,B,physical,primitive,True
+2475,23,150.0,288,51525,333450.0,642600,56925,"{""T"": 15.0, ""CNOT"": 103620.0}","{""T"": 15.0}",15,Litinski_15to1,15,NL_min,B,physical,clifford_t,True

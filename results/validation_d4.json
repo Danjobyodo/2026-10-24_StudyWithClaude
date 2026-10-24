@@ -1,0 +1,271 @@
+{
+ "notebook": "D4_switching_validation",
+ "results": {
+  "V1a boundary X-generator types match Fig. 4": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "V1b boundary Z checks (Z^r on L_r, Z^b on L_b, Z^rZ^b and Z^g on L_rb)": {
+   "status": "PASS",
+   "detail": "{('rb', 'Lrb'): 18, ('g', 'Lrb'): 18, ('b', 'Lb'): 9, ('r', 'Lr'): 9}"
+  },
+  "V1c bulk CZ positions (S^r: upper-right x2, S^g: upper-left + lower-right, S^b: lower-left x2)": {
+   "status": "PASS",
+   "detail": "{0: {(0, 0): 2}, 1: {(0, -1): 1, (-1, 0): 1}, 2: {(-1, -1): 2}}"
+  },
+  "V1d CZ colour pairs (S^r: g-b, S^g: r-b, S^b: r-g)": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "V2 D4 L=1: shifts in C_Z, commuting on C_Z, S^2=1, k=1": {
+   "status": "PASS",
+   "detail": "{'shift_in_CZ': True, 'noncommuting_pairs': 0, 'bad_squares': 0, 'n_qubits': 12, 'dim_CZ': 3, 'rank_shifts': 2, 'n_xgens': 2, 'k': 1, 'shifts_independent': True}"
+  },
+  "V2 FSC L=1: CSS code, k=1": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "V2 D4 L=2: shifts in C_Z, commuting on C_Z, S^2=1, k=1": {
+   "status": "PASS",
+   "detail": "{'shift_in_CZ': True, 'noncommuting_pairs': 0, 'bad_squares': 0, 'n_qubits': 36, 'dim_CZ': 12, 'rank_shifts': 11, 'n_xgens': 11, 'k': 1, 'shifts_independent': True}"
+  },
+  "V2 FSC L=2: CSS code, k=1": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "V2 D4 L=3: shifts in C_Z, commuting on C_Z, S^2=1, k=1": {
+   "status": "PASS",
+   "detail": "{'shift_in_CZ': True, 'noncommuting_pairs': 0, 'bad_squares': 0, 'n_qubits': 72, 'dim_CZ': 27, 'rank_shifts': 26, 'n_xgens': 26, 'k': 1, 'shifts_independent': True}"
+  },
+  "V2 FSC L=3: CSS code, k=1": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "V2 D4 L=4: shifts in C_Z, commuting on C_Z, S^2=1, k=1": {
+   "status": "PASS",
+   "detail": "{'shift_in_CZ': True, 'noncommuting_pairs': 0, 'bad_squares': 0, 'n_qubits': 120, 'dim_CZ': 48, 'rank_shifts': 47, 'n_xgens': 47, 'k': 1, 'shifts_independent': True}"
+  },
+  "V2 FSC L=4: CSS code, k=1": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "V2 D4 L=5: shifts in C_Z, commuting on C_Z, S^2=1, k=1": {
+   "status": "PASS",
+   "detail": "{'shift_in_CZ': True, 'noncommuting_pairs': 0, 'bad_squares': 0, 'n_qubits': 180, 'dim_CZ': 75, 'rank_shifts': 74, 'n_xgens': 74, 'k': 1, 'shifts_independent': True}"
+  },
+  "V2 FSC L=5: CSS code, k=1": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "V2 D4 L=6: shifts in C_Z, commuting on C_Z, S^2=1, k=1": {
+   "status": "PASS",
+   "detail": "{'shift_in_CZ': True, 'noncommuting_pairs': 0, 'bad_squares': 0, 'n_qubits': 252, 'dim_CZ': 108, 'rank_shifts': 107, 'n_xgens': 107, 'k': 1, 'shifts_independent': True}"
+  },
+  "V2 FSC L=6: CSS code, k=1": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "V2 negative control: dressed generators without g-qubit Z checks are detected as non-commuting": {
+   "status": "PASS",
+   "detail": "8 non-commuting pairs"
+  },
+  "V3a independent L=1: code dimension = 2": {
+   "status": "PASS",
+   "detail": "dim C_Z=8"
+  },
+  "V3b independent L=1: U preserves the code space": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "V3c independent L=1: logical action of U = T^dag (Z-basis defined by the trivial gauge field)": {
+   "status": "PASS",
+   "detail": "[[1.    +0.j     0.    +0.j    ]  [0.    +0.j     0.7071-0.7071j]]"
+  },
+  "V4 FSC L=2: brute-force d_Z = MILP d_Z = L": {
+   "status": "PASS",
+   "detail": "(2, 2)"
+  },
+  "V4 D4 L=2: brute-force d_Z = MILP d_Z = L": {
+   "status": "PASS",
+   "detail": "(2, 2)"
+  },
+  "V4 FSC L=3: brute-force d_Z = MILP d_Z = L": {
+   "status": "PASS",
+   "detail": "(3, 3)"
+  },
+  "V4 D4 L=3: brute-force d_Z = MILP d_Z = L": {
+   "status": "PASS",
+   "detail": "(3, 3)"
+  },
+  "V4 FSC L=2: brute-force X-shift distance = MILP = L+3": {
+   "status": "PASS",
+   "detail": "(5, 5)"
+  },
+  "V4 D4 L=2: brute-force X-shift distance = MILP = L+3": {
+   "status": "PASS",
+   "detail": "(5, 5)"
+  },
+  "V5 D4 L=2 Knill-Laflamme: all weight-1 Paulis correctable-detectable, some weight-2 logical (distance = 2)": {
+   "status": "PASS",
+   "detail": "violations {1: 0, 2: 2}, 86s"
+  },
+  "V6 L=1: U S U^dag = S' on C_Z for all 2 generators; V(C_Z)=C_Z; logical phases (pi/4 units) = [0,7] (T^dag)": {
+   "status": "PASS",
+   "detail": "max local configs 4, phases [0, 7]"
+  },
+  "V6 L=2: U S U^dag = S' on C_Z for all 11 generators; V(C_Z)=C_Z; logical phases (pi/4 units) = [0,7] (T^dag)": {
+   "status": "PASS",
+   "detail": "max local configs 1024, phases [0, 7]"
+  },
+  "V6 L=3: U S U^dag = S' on C_Z for all 26 generators; V(C_Z)=C_Z; logical phases (pi/4 units) = [0,7] (T^dag)": {
+   "status": "PASS",
+   "detail": "max local configs 4096, phases [0, 7]"
+  },
+  "V6 L=4: U S U^dag = S' on C_Z for all 47 generators; V(C_Z)=C_Z; logical phases (pi/4 units) = [0,7] (T^dag)": {
+   "status": "PASS",
+   "detail": "max local configs 4096, phases [0, 7]"
+  },
+  "V6 L=5: U S U^dag = S' on C_Z for all 74 generators; V(C_Z)=C_Z; logical phases (pi/4 units) = [0,7] (T^dag)": {
+   "status": "PASS",
+   "detail": "max local configs 4096, phases [0, 7]"
+  },
+  "V6 L=6: U S U^dag = S' on C_Z for all 107 generators; V(C_Z)=C_Z; logical phases (pi/4 units) = [0,7] (T^dag)": {
+   "status": "PASS",
+   "detail": "max local configs 4096, phases [0, 7]"
+  },
+  "V6 negative control L=4 [no boundary T^dag] is rejected or changes the logical action": {
+   "status": "PASS",
+   "detail": "7 failing generators, phases [0, 0]"
+  },
+  "V6 negative control L=4 [CS<->CS^dag swapped] is rejected or changes the logical action": {
+   "status": "PASS",
+   "detail": "7 failing generators, phases [0, 7]"
+  },
+  "V6 negative control L=4 [boundary T instead of T^dag] is rejected or changes the logical action": {
+   "status": "PASS",
+   "detail": "7 failing generators, phases [0, 1]"
+  },
+  "V6 negative control L=4 [CS,CS (no dagger)] is rejected or changes the logical action": {
+   "status": "PASS",
+   "detail": "24 failing generators, phases [0, 7]"
+  },
+  "V6 conjugate convention (CS^dag,CS, boundary T) gives a valid logical T (consistency)": {
+   "status": "PASS",
+   "detail": "[0, 1]"
+  },
+  "V7 L=1: exact protocol, 60 random inputs/branches -> fidelity 1 with T^dag action": {
+   "status": "PASS",
+   "detail": "min F = 1.000000000000, 0s"
+  },
+  "V7 L=2: exact protocol, 200 random inputs/branches -> fidelity 1 with T^dag action": {
+   "status": "PASS",
+   "detail": "min F = 1.000000000000, 105s"
+  },
+  "V7 L=2 input |0>: output = T^dag |0>": {
+   "status": "PASS",
+   "detail": "min F=1.000000000000"
+  },
+  "V7 L=2 input |1>: output = T^dag |1>": {
+   "status": "PASS",
+   "detail": "min F=1.000000000000"
+  },
+  "V7 L=2 input |+>: output = T^dag |+>": {
+   "status": "PASS",
+   "detail": "min F=1.000000000000"
+  },
+  "V7 L=2 input |+i>: output = T^dag |+i>": {
+   "status": "PASS",
+   "detail": "min F=1.000000000000"
+  },
+  "V7 L=2: S^g outcomes m are random (all 16 patterns occur; chi^2 test vs uniform p=0.58)": {
+   "status": "PASS",
+   "detail": "{(0, 0, 0, 0): 15, (0, 0, 0, 1): 8, (0, 0, 1, 0): 8, (0, 0, 1, 1): 17, (0, 1, 0, 0): 12, (0, 1, 0, 1): 15, (0, 1, 1, 0): 17, (0, 1, 1, 1): 10, (1, 0, 0, 0): 10, (1, 0, 0, 1): 16, (1, 0, 1, 0): 12, (1, 0, 1, 1): 10, (1, 1, 0, 0): 17, (1, 1, 0, 1): 8, (1, 1, 1, 0): 13, (1, 1, 1, 1): 12}"
+  },
+  "V7 L=2: switch-out correction |kappa| has mean ~ n_g/2 (supports expected CZ count = worst/2)": {
+   "status": "PASS",
+   "detail": "mean |kappa| = 2.19, n_g = 4, hist {0: 8, 1: 40, 2: 76, 3: 57, 4: 19}"
+  },
+  "V7 negative control [without Z^rZ^b Pauli-frame correction] fails for some branches": {
+   "status": "PASS",
+   "detail": "min F = 0.0000"
+  },
+  "V7 negative control [S^g correction without its CZ part] fails for some branches": {
+   "status": "PASS",
+   "detail": "min F = 0.0625"
+  },
+  "V7 negative control [W without boundary T^dag] fails for some branches": {
+   "status": "PASS",
+   "detail": "min F = 0.5011"
+  },
+  "V8 L=1: F invariant under all 1 FSC generators; F(1)-F(0)=7 (T^dag)": {
+   "status": "PASS",
+   "detail": "max local configs 4, F0=0, F1=7, 0.0s"
+  },
+  "V8 L=2: F invariant under all 7 FSC generators; F(1)-F(0)=7 (T^dag)": {
+   "status": "PASS",
+   "detail": "max local configs 64, F0=0, F1=7, 0.0s"
+  },
+  "V8 L=3: F invariant under all 17 FSC generators; F(1)-F(0)=7 (T^dag)": {
+   "status": "PASS",
+   "detail": "max local configs 2048, F0=0, F1=7, 0.2s"
+  },
+  "V8 L=4: F invariant under all 31 FSC generators; F(1)-F(0)=7 (T^dag)": {
+   "status": "PASS",
+   "detail": "max local configs 4096, F0=0, F1=7, 0.7s"
+  },
+  "V8 L=5: F invariant under all 49 FSC generators; F(1)-F(0)=7 (T^dag)": {
+   "status": "PASS",
+   "detail": "max local configs 16384, F0=0, F1=7, 2.0s"
+  },
+  "V8 L=6: F invariant under all 71 FSC generators; F(1)-F(0)=7 (T^dag)": {
+   "status": "PASS",
+   "detail": "max local configs 16384, F0=0, F1=7, 4.0s"
+  },
+  "V8 L=7: F invariant under all 97 FSC generators; F(1)-F(0)=7 (T^dag)": {
+   "status": "PASS",
+   "detail": "max local configs 16384, F0=0, F1=7, 6.6s"
+  },
+  "V8 L=8: F invariant under all 127 FSC generators; F(1)-F(0)=7 (T^dag)": {
+   "status": "PASS",
+   "detail": "max local configs 16384, F0=0, F1=7, 13.0s"
+  },
+  "V9 L=3: every X-type gadget (unpruned) implements the projective measurement of its Clifford stabilizer": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "V9 L=3: pruned gadgets (frozen qubits removed) agree when frozen qubits are |0>": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "V10 L=3: all gates of different gadgets within each commuting class commute (matrix check)": {
+   "status": "PASS",
+   "detail": "184 gate pairs"
+  },
+  "V10 L=3: all gates of U = W V mutually commute (U can be layered freely)": {
+   "status": "PASS",
+   "detail": "49 gates"
+  },
+  "V10 CCZ = 7-T decomposition (matrix)": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "V10 CS = 3-T decomposition (matrix)": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "V10 CS^dag decomposition (matrix)": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "V11 qubit/generator/CCZ counts agree with direct geometric formulas (L=2..9)": {
+   "status": "PASS",
+   "detail": ""
+  }
+ },
+ "not_verified": [
+  "Knill-Laflamme distance of the D4 phase for L>=3",
+  "fault tolerance / JIT decoder performance (noise not simulated)",
+  "constants of the O(d) round counts",
+  "FSC -> standard rotated-patch conversion"
+ ]
+}

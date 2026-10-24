@@ -1,0 +1,1045 @@
+{
+ "params": {
+  "kappa0": 1.0,
+  "kappa_in": 1.0,
+  "kappa_out": 1.0,
+  "tau_rounds": 1.0,
+  "t_inj_FT": 6,
+  "t_inj_NL": 1
+ },
+ "dur": {
+  "INIT_X": 1,
+  "INIT_Z": 1,
+  "MEAS_X": 1,
+  "MEAS_Z": 1,
+  "H": 1,
+  "X": 1,
+  "Z": 1,
+  "S": 1,
+  "SDG": 1,
+  "T": 1,
+  "TDG": 1,
+  "CNOT": 1,
+  "CZ": 1,
+  "CS": 1,
+  "CSDG": 1,
+  "CCZ": 1
+ },
+ "blocks": {
+  "3|primitive": {
+   "d": 3,
+   "gateset": "primitive",
+   "n": {
+    "fsc_data": 42,
+    "d4_data": 60,
+    "fsc_anc": 41,
+    "d4_anc": 59
+   },
+   "n_total": 119,
+   "n_anc_g": 9,
+   "round": {
+    "D4": {
+     "time_lb": 9.0,
+     "time_ub": 28,
+     "depth_lb": 9,
+     "depth_ub": 28,
+     "classes": 3,
+     "gates": {
+      "INIT_X": 26,
+      "CNOT": 210,
+      "CCZ": 24,
+      "MEAS_X": 26,
+      "INIT_Z": 33,
+      "MEAS_Z": 33
+     },
+     "n_anc": 59
+    },
+    "D4g": {
+     "time_lb": 8.0,
+     "time_ub": 8,
+     "depth_lb": 8,
+     "depth_ub": 8,
+     "classes": 1,
+     "gates": {
+      "INIT_X": 9,
+      "CNOT": 30,
+      "MEAS_X": 9,
+      "CCZ": 8
+     },
+     "n_anc": 9
+    },
+    "FSC": {
+     "time_lb": 8.0,
+     "time_ub": 14,
+     "depth_lb": 8,
+     "depth_ub": 14,
+     "classes": 2,
+     "gates": {
+      "INIT_X": 17,
+      "CNOT": 150,
+      "MEAS_X": 17,
+      "INIT_Z": 24,
+      "MEAS_Z": 24
+     },
+     "n_anc": 41
+    }
+   },
+   "U_time": 5,
+   "U_gates": {
+    "CNOT": 30,
+    "CS": 9,
+    "CSDG": 4,
+    "TDG": 6
+   },
+   "out_time": 2,
+   "out_gates": {
+    "MEAS_Z": 18,
+    "CZ": 8
+   },
+   "xcorr_time": 1
+  },
+  "3|clifford_t": {
+   "d": 3,
+   "gateset": "clifford_t",
+   "n": {
+    "fsc_data": 42,
+    "d4_data": 60,
+    "fsc_anc": 41,
+    "d4_anc": 59
+   },
+   "n_total": 119,
+   "n_anc_g": 9,
+   "round": {
+    "D4": {
+     "time_lb": 20.0,
+     "time_ub": 60,
+     "depth_lb": 20,
+     "depth_ub": 60,
+     "classes": 4,
+     "gates": {
+      "INIT_X": 26,
+      "CNOT": 354,
+      "TDG": 72,
+      "T": 96,
+      "MEAS_X": 26,
+      "INIT_Z": 33,
+      "MEAS_Z": 33
+     },
+     "n_anc": 59
+    },
+    "D4g": {
+     "time_lb": 16.0,
+     "time_ub": 18,
+     "depth_lb": 16,
+     "depth_ub": 18,
+     "classes": 1,
+     "gates": {
+      "INIT_X": 9,
+      "CNOT": 78,
+      "MEAS_X": 9,
+      "TDG": 24,
+      "T": 32
+     },
+     "n_anc": 9
+    },
+    "FSC": {
+     "time_lb": 8.0,
+     "time_ub": 14,
+     "depth_lb": 8,
+     "depth_ub": 14,
+     "classes": 2,
+     "gates": {
+      "INIT_X": 17,
+      "CNOT": 150,
+      "MEAS_X": 17,
+      "INIT_Z": 24,
+      "MEAS_Z": 24
+     },
+     "n_anc": 41
+    }
+   },
+   "U_time": 6,
+   "U_gates": {
+    "CNOT": 56,
+    "T": 22,
+    "TDG": 23
+   },
+   "out_time": 2,
+   "out_gates": {
+    "MEAS_Z": 18,
+    "CZ": 8
+   },
+   "xcorr_time": 1
+  },
+  "5|primitive": {
+   "d": 5,
+   "gateset": "primitive",
+   "n": {
+    "fsc_data": 110,
+    "d4_data": 160,
+    "fsc_anc": 109,
+    "d4_anc": 159
+   },
+   "n_total": 319,
+   "n_anc_g": 25,
+   "round": {
+    "D4": {
+     "time_lb": 9.0,
+     "time_ub": 28,
+     "depth_lb": 9,
+     "depth_ub": 28,
+     "classes": 3,
+     "gates": {
+      "INIT_X": 74,
+      "CNOT": 594,
+      "CCZ": 96,
+      "MEAS_X": 74,
+      "INIT_Z": 85,
+      "MEAS_Z": 85
+     },
+     "n_anc": 159
+    },
+    "D4g": {
+     "time_lb": 8.0,
+     "time_ub": 8,
+     "depth_lb": 8,
+     "depth_ub": 8,
+     "classes": 1,
+     "gates": {
+      "INIT_X": 25,
+      "CNOT": 90,
+      "MEAS_X": 25,
+      "CCZ": 32
+     },
+     "n_anc": 25
+    },
+    "FSC": {
+     "time_lb": 8.0,
+     "time_ub": 14,
+     "depth_lb": 8,
+     "depth_ub": 14,
+     "classes": 2,
+     "gates": {
+      "INIT_X": 49,
+      "CNOT": 414,
+      "MEAS_X": 49,
+      "INIT_Z": 60,
+      "MEAS_Z": 60
+     },
+     "n_anc": 109
+    }
+   },
+   "U_time": 5,
+   "U_gates": {
+    "CNOT": 90,
+    "CS": 25,
+    "CSDG": 16,
+    "TDG": 10
+   },
+   "out_time": 2,
+   "out_gates": {
+    "MEAS_Z": 50,
+    "CZ": 32
+   },
+   "xcorr_time": 1
+  },
+  "5|clifford_t": {
+   "d": 5,
+   "gateset": "clifford_t",
+   "n": {
+    "fsc_data": 110,
+    "d4_data": 160,
+    "fsc_anc": 109,
+    "d4_anc": 159
+   },
+   "n_total": 319,
+   "n_anc_g": 25,
+   "round": {
+    "D4": {
+     "time_lb": 20.0,
+     "time_ub": 60,
+     "depth_lb": 20,
+     "depth_ub": 60,
+     "classes": 4,
+     "gates": {
+      "INIT_X": 74,
+      "CNOT": 1170,
+      "TDG": 288,
+      "T": 384,
+      "MEAS_X": 74,
+      "INIT_Z": 85,
+      "MEAS_Z": 85
+     },
+     "n_anc": 159
+    },
+    "D4g": {
+     "time_lb": 16.0,
+     "time_ub": 18,
+     "depth_lb": 16,
+     "depth_ub": 18,
+     "classes": 1,
+     "gates": {
+      "INIT_X": 25,
+      "CNOT": 282,
+      "MEAS_X": 25,
+      "TDG": 96,
+      "T": 128
+     },
+     "n_anc": 25
+    },
+    "FSC": {
+     "time_lb": 8.0,
+     "time_ub": 14,
+     "depth_lb": 8,
+     "depth_ub": 14,
+     "classes": 2,
+     "gates": {
+      "INIT_X": 49,
+      "CNOT": 414,
+      "MEAS_X": 49,
+      "INIT_Z": 60,
+      "MEAS_Z": 60
+     },
+     "n_anc": 109
+    }
+   },
+   "U_time": 6,
+   "U_gates": {
+    "CNOT": 172,
+    "T": 66,
+    "TDG": 67
+   },
+   "out_time": 2,
+   "out_gates": {
+    "MEAS_Z": 50,
+    "CZ": 32
+   },
+   "xcorr_time": 1
+  },
+  "7|primitive": {
+   "d": 7,
+   "gateset": "primitive",
+   "n": {
+    "fsc_data": 210,
+    "d4_data": 308,
+    "fsc_anc": 209,
+    "d4_anc": 307
+   },
+   "n_total": 615,
+   "n_anc_g": 49,
+   "round": {
+    "D4": {
+     "time_lb": 9.0,
+     "time_ub": 28,
+     "depth_lb": 9,
+     "depth_ub": 28,
+     "classes": 3,
+     "gates": {
+      "INIT_X": 146,
+      "CNOT": 1170,
+      "CCZ": 216,
+      "MEAS_X": 146,
+      "INIT_Z": 161,
+      "MEAS_Z": 161
+     },
+     "n_anc": 307
+    },
+    "D4g": {
+     "time_lb": 8.0,
+     "time_ub": 8,
+     "depth_lb": 8,
+     "depth_ub": 8,
+     "classes": 1,
+     "gates": {
+      "INIT_X": 49,
+      "CNOT": 182,
+      "MEAS_X": 49,
+      "CCZ": 72
+     },
+     "n_anc": 49
+    },
+    "FSC": {
+     "time_lb": 8.0,
+     "time_ub": 14,
+     "depth_lb": 8,
+     "depth_ub": 14,
+     "classes": 2,
+     "gates": {
+      "INIT_X": 97,
+      "CNOT": 806,
+      "MEAS_X": 97,
+      "INIT_Z": 112,
+      "MEAS_Z": 112
+     },
+     "n_anc": 209
+    }
+   },
+   "U_time": 5,
+   "U_gates": {
+    "CNOT": 182,
+    "CS": 49,
+    "CSDG": 36,
+    "TDG": 14
+   },
+   "out_time": 2,
+   "out_gates": {
+    "MEAS_Z": 98,
+    "CZ": 72
+   },
+   "xcorr_time": 1
+  },
+  "7|clifford_t": {
+   "d": 7,
+   "gateset": "clifford_t",
+   "n": {
+    "fsc_data": 210,
+    "d4_data": 308,
+    "fsc_anc": 209,
+    "d4_anc": 307
+   },
+   "n_total": 615,
+   "n_anc_g": 49,
+   "round": {
+    "D4": {
+     "time_lb": 20.0,
+     "time_ub": 60,
+     "depth_lb": 20,
+     "depth_ub": 60,
+     "classes": 4,
+     "gates": {
+      "INIT_X": 146,
+      "CNOT": 2466,
+      "TDG": 648,
+      "T": 864,
+      "MEAS_X": 146,
+      "INIT_Z": 161,
+      "MEAS_Z": 161
+     },
+     "n_anc": 307
+    },
+    "D4g": {
+     "time_lb": 16.0,
+     "time_ub": 18,
+     "depth_lb": 16,
+     "depth_ub": 18,
+     "classes": 1,
+     "gates": {
+      "INIT_X": 49,
+      "CNOT": 614,
+      "MEAS_X": 49,
+      "TDG": 216,
+      "T": 288
+     },
+     "n_anc": 49
+    },
+    "FSC": {
+     "time_lb": 8.0,
+     "time_ub": 14,
+     "depth_lb": 8,
+     "depth_ub": 14,
+     "classes": 2,
+     "gates": {
+      "INIT_X": 97,
+      "CNOT": 806,
+      "MEAS_X": 97,
+      "INIT_Z": 112,
+      "MEAS_Z": 112
+     },
+     "n_anc": 209
+    }
+   },
+   "U_time": 6,
+   "U_gates": {
+    "CNOT": 352,
+    "T": 134,
+    "TDG": 135
+   },
+   "out_time": 2,
+   "out_gates": {
+    "MEAS_Z": 98,
+    "CZ": 72
+   },
+   "xcorr_time": 1
+  },
+  "9|primitive": {
+   "d": 9,
+   "gateset": "primitive",
+   "n": {
+    "fsc_data": 342,
+    "d4_data": 504,
+    "fsc_anc": 341,
+    "d4_anc": 503
+   },
+   "n_total": 1007,
+   "n_anc_g": 81,
+   "round": {
+    "D4": {
+     "time_lb": 9.0,
+     "time_ub": 28,
+     "depth_lb": 9,
+     "depth_ub": 28,
+     "classes": 3,
+     "gates": {
+      "INIT_X": 242,
+      "CNOT": 1938,
+      "CCZ": 384,
+      "MEAS_X": 242,
+      "INIT_Z": 261,
+      "MEAS_Z": 261
+     },
+     "n_anc": 503
+    },
+    "D4g": {
+     "time_lb": 8.0,
+     "time_ub": 8,
+     "depth_lb": 8,
+     "depth_ub": 8,
+     "classes": 1,
+     "gates": {
+      "INIT_X": 81,
+      "CNOT": 306,
+      "MEAS_X": 81,
+      "CCZ": 128
+     },
+     "n_anc": 81
+    },
+    "FSC": {
+     "time_lb": 8.0,
+     "time_ub": 14,
+     "depth_lb": 8,
+     "depth_ub": 14,
+     "classes": 2,
+     "gates": {
+      "INIT_X": 161,
+      "CNOT": 1326,
+      "MEAS_X": 161,
+      "INIT_Z": 180,
+      "MEAS_Z": 180
+     },
+     "n_anc": 341
+    }
+   },
+   "U_time": 5,
+   "U_gates": {
+    "CNOT": 306,
+    "CS": 81,
+    "CSDG": 64,
+    "TDG": 18
+   },
+   "out_time": 2,
+   "out_gates": {
+    "MEAS_Z": 162,
+    "CZ": 128
+   },
+   "xcorr_time": 1
+  },
+  "9|clifford_t": {
+   "d": 9,
+   "gateset": "clifford_t",
+   "n": {
+    "fsc_data": 342,
+    "d4_data": 504,
+    "fsc_anc": 341,
+    "d4_anc": 503
+   },
+   "n_total": 1007,
+   "n_anc_g": 81,
+   "round": {
+    "D4": {
+     "time_lb": 20.0,
+     "time_ub": 60,
+     "depth_lb": 20,
+     "depth_ub": 60,
+     "classes": 4,
+     "gates": {
+      "INIT_X": 242,
+      "CNOT": 4242,
+      "TDG": 1152,
+      "T": 1536,
+      "MEAS_X": 242,
+      "INIT_Z": 261,
+      "MEAS_Z": 261
+     },
+     "n_anc": 503
+    },
+    "D4g": {
+     "time_lb": 16.0,
+     "time_ub": 18,
+     "depth_lb": 16,
+     "depth_ub": 18,
+     "classes": 1,
+     "gates": {
+      "INIT_X": 81,
+      "CNOT": 1074,
+      "MEAS_X": 81,
+      "TDG": 384,
+      "T": 512
+     },
+     "n_anc": 81
+    },
+    "FSC": {
+     "time_lb": 8.0,
+     "time_ub": 14,
+     "depth_lb": 8,
+     "depth_ub": 14,
+     "classes": 2,
+     "gates": {
+      "INIT_X": 161,
+      "CNOT": 1326,
+      "MEAS_X": 161,
+      "INIT_Z": 180,
+      "MEAS_Z": 180
+     },
+     "n_anc": 341
+    }
+   },
+   "U_time": 6,
+   "U_gates": {
+    "CNOT": 596,
+    "T": 226,
+    "TDG": 227
+   },
+   "out_time": 2,
+   "out_gates": {
+    "MEAS_Z": 162,
+    "CZ": 128
+   },
+   "xcorr_time": 1
+  },
+  "11|primitive": {
+   "d": 11,
+   "gateset": "primitive",
+   "n": {
+    "fsc_data": 506,
+    "d4_data": 748,
+    "fsc_anc": 505,
+    "d4_anc": 747
+   },
+   "n_total": 1495,
+   "n_anc_g": 121,
+   "round": {
+    "D4": {
+     "time_lb": 9.0,
+     "time_ub": 28,
+     "depth_lb": 9,
+     "depth_ub": 28,
+     "classes": 3,
+     "gates": {
+      "INIT_X": 362,
+      "CNOT": 2898,
+      "CCZ": 600,
+      "MEAS_X": 362,
+      "INIT_Z": 385,
+      "MEAS_Z": 385
+     },
+     "n_anc": 747
+    },
+    "D4g": {
+     "time_lb": 8.0,
+     "time_ub": 8,
+     "depth_lb": 8,
+     "depth_ub": 8,
+     "classes": 1,
+     "gates": {
+      "INIT_X": 121,
+      "CNOT": 462,
+      "MEAS_X": 121,
+      "CCZ": 200
+     },
+     "n_anc": 121
+    },
+    "FSC": {
+     "time_lb": 8.0,
+     "time_ub": 14,
+     "depth_lb": 8,
+     "depth_ub": 14,
+     "classes": 2,
+     "gates": {
+      "INIT_X": 241,
+      "CNOT": 1974,
+      "MEAS_X": 241,
+      "INIT_Z": 264,
+      "MEAS_Z": 264
+     },
+     "n_anc": 505
+    }
+   },
+   "U_time": 5,
+   "U_gates": {
+    "CNOT": 462,
+    "CS": 121,
+    "CSDG": 100,
+    "TDG": 22
+   },
+   "out_time": 2,
+   "out_gates": {
+    "MEAS_Z": 242,
+    "CZ": 200
+   },
+   "xcorr_time": 1
+  },
+  "11|clifford_t": {
+   "d": 11,
+   "gateset": "clifford_t",
+   "n": {
+    "fsc_data": 506,
+    "d4_data": 748,
+    "fsc_anc": 505,
+    "d4_anc": 747
+   },
+   "n_total": 1495,
+   "n_anc_g": 121,
+   "round": {
+    "D4": {
+     "time_lb": 20.0,
+     "time_ub": 60,
+     "depth_lb": 20,
+     "depth_ub": 60,
+     "classes": 4,
+     "gates": {
+      "INIT_X": 362,
+      "CNOT": 6498,
+      "TDG": 1800,
+      "T": 2400,
+      "MEAS_X": 362,
+      "INIT_Z": 385,
+      "MEAS_Z": 385
+     },
+     "n_anc": 747
+    },
+    "D4g": {
+     "time_lb": 16.0,
+     "time_ub": 18,
+     "depth_lb": 16,
+     "depth_ub": 18,
+     "classes": 1,
+     "gates": {
+      "INIT_X": 121,
+      "CNOT": 1662,
+      "MEAS_X": 121,
+      "TDG": 600,
+      "T": 800
+     },
+     "n_anc": 121
+    },
+    "FSC": {
+     "time_lb": 8.0,
+     "time_ub": 14,
+     "depth_lb": 8,
+     "depth_ub": 14,
+     "classes": 2,
+     "gates": {
+      "INIT_X": 241,
+      "CNOT": 1974,
+      "MEAS_X": 241,
+      "INIT_Z": 264,
+      "MEAS_Z": 264
+     },
+     "n_anc": 505
+    }
+   },
+   "U_time": 6,
+   "U_gates": {
+    "CNOT": 904,
+    "T": 342,
+    "TDG": 343
+   },
+   "out_time": 2,
+   "out_gates": {
+    "MEAS_Z": 242,
+    "CZ": 200
+   },
+   "xcorr_time": 1
+  },
+  "13|primitive": {
+   "d": 13,
+   "gateset": "primitive",
+   "n": {
+    "fsc_data": 702,
+    "d4_data": 1040,
+    "fsc_anc": 701,
+    "d4_anc": 1039
+   },
+   "n_total": 2079,
+   "n_anc_g": 169,
+   "round": {
+    "D4": {
+     "time_lb": 9.0,
+     "time_ub": 28,
+     "depth_lb": 9,
+     "depth_ub": 28,
+     "classes": 3,
+     "gates": {
+      "INIT_X": 506,
+      "CNOT": 4050,
+      "CCZ": 864,
+      "MEAS_X": 506,
+      "INIT_Z": 533,
+      "MEAS_Z": 533
+     },
+     "n_anc": 1039
+    },
+    "D4g": {
+     "time_lb": 8.0,
+     "time_ub": 8,
+     "depth_lb": 8,
+     "depth_ub": 8,
+     "classes": 1,
+     "gates": {
+      "INIT_X": 169,
+      "CNOT": 650,
+      "MEAS_X": 169,
+      "CCZ": 288
+     },
+     "n_anc": 169
+    },
+    "FSC": {
+     "time_lb": 8.0,
+     "time_ub": 14,
+     "depth_lb": 8,
+     "depth_ub": 14,
+     "classes": 2,
+     "gates": {
+      "INIT_X": 337,
+      "CNOT": 2750,
+      "MEAS_X": 337,
+      "INIT_Z": 364,
+      "MEAS_Z": 364
+     },
+     "n_anc": 701
+    }
+   },
+   "U_time": 5,
+   "U_gates": {
+    "CNOT": 650,
+    "CS": 169,
+    "CSDG": 144,
+    "TDG": 26
+   },
+   "out_time": 2,
+   "out_gates": {
+    "MEAS_Z": 338,
+    "CZ": 288
+   },
+   "xcorr_time": 1
+  },
+  "13|clifford_t": {
+   "d": 13,
+   "gateset": "clifford_t",
+   "n": {
+    "fsc_data": 702,
+    "d4_data": 1040,
+    "fsc_anc": 701,
+    "d4_anc": 1039
+   },
+   "n_total": 2079,
+   "n_anc_g": 169,
+   "round": {
+    "D4": {
+     "time_lb": 20.0,
+     "time_ub": 60,
+     "depth_lb": 20,
+     "depth_ub": 60,
+     "classes": 4,
+     "gates": {
+      "INIT_X": 506,
+      "CNOT": 9234,
+      "TDG": 2592,
+      "T": 3456,
+      "MEAS_X": 506,
+      "INIT_Z": 533,
+      "MEAS_Z": 533
+     },
+     "n_anc": 1039
+    },
+    "D4g": {
+     "time_lb": 16.0,
+     "time_ub": 18,
+     "depth_lb": 16,
+     "depth_ub": 18,
+     "classes": 1,
+     "gates": {
+      "INIT_X": 169,
+      "CNOT": 2378,
+      "MEAS_X": 169,
+      "TDG": 864,
+      "T": 1152
+     },
+     "n_anc": 169
+    },
+    "FSC": {
+     "time_lb": 8.0,
+     "time_ub": 14,
+     "depth_lb": 8,
+     "depth_ub": 14,
+     "classes": 2,
+     "gates": {
+      "INIT_X": 337,
+      "CNOT": 2750,
+      "MEAS_X": 337,
+      "INIT_Z": 364,
+      "MEAS_Z": 364
+     },
+     "n_anc": 701
+    }
+   },
+   "U_time": 6,
+   "U_gates": {
+    "CNOT": 1276,
+    "T": 482,
+    "TDG": 483
+   },
+   "out_time": 2,
+   "out_gates": {
+    "MEAS_Z": 338,
+    "CZ": 288
+   },
+   "xcorr_time": 1
+  },
+  "15|primitive": {
+   "d": 15,
+   "gateset": "primitive",
+   "n": {
+    "fsc_data": 930,
+    "d4_data": 1380,
+    "fsc_anc": 929,
+    "d4_anc": 1379
+   },
+   "n_total": 2759,
+   "n_anc_g": 225,
+   "round": {
+    "D4": {
+     "time_lb": 9.0,
+     "time_ub": 28,
+     "depth_lb": 9,
+     "depth_ub": 28,
+     "classes": 3,
+     "gates": {
+      "INIT_X": 674,
+      "CNOT": 5394,
+      "CCZ": 1176,
+      "MEAS_X": 674,
+      "INIT_Z": 705,
+      "MEAS_Z": 705
+     },
+     "n_anc": 1379
+    },
+    "D4g": {
+     "time_lb": 8.0,
+     "time_ub": 8,
+     "depth_lb": 8,
+     "depth_ub": 8,
+     "classes": 1,
+     "gates": {
+      "INIT_X": 225,
+      "CNOT": 870,
+      "MEAS_X": 225,
+      "CCZ": 392
+     },
+     "n_anc": 225
+    },
+    "FSC": {
+     "time_lb": 8.0,
+     "time_ub": 14,
+     "depth_lb": 8,
+     "depth_ub": 14,
+     "classes": 2,
+     "gates": {
+      "INIT_X": 449,
+      "CNOT": 3654,
+      "MEAS_X": 449,
+      "INIT_Z": 480,
+      "MEAS_Z": 480
+     },
+     "n_anc": 929
+    }
+   },
+   "U_time": 5,
+   "U_gates": {
+    "CNOT": 870,
+    "CS": 225,
+    "CSDG": 196,
+    "TDG": 30
+   },
+   "out_time": 2,
+   "out_gates": {
+    "MEAS_Z": 450,
+    "CZ": 392
+   },
+   "xcorr_time": 1
+  },
+  "15|clifford_t": {
+   "d": 15,
+   "gateset": "clifford_t",
+   "n": {
+    "fsc_data": 930,
+    "d4_data": 1380,
+    "fsc_anc": 929,
+    "d4_anc": 1379
+   },
+   "n_total": 2759,
+   "n_anc_g": 225,
+   "round": {
+    "D4": {
+     "time_lb": 20.0,
+     "time_ub": 60,
+     "depth_lb": 20,
+     "depth_ub": 60,
+     "classes": 4,
+     "gates": {
+      "INIT_X": 674,
+      "CNOT": 12450,
+      "TDG": 3528,
+      "T": 4704,
+      "MEAS_X": 674,
+      "INIT_Z": 705,
+      "MEAS_Z": 705
+     },
+     "n_anc": 1379
+    },
+    "D4g": {
+     "time_lb": 16.0,
+     "time_ub": 18,
+     "depth_lb": 16,
+     "depth_ub": 18,
+     "classes": 1,
+     "gates": {
+      "INIT_X": 225,
+      "CNOT": 3222,
+      "MEAS_X": 225,
+      "TDG": 1176,
+      "T": 1568
+     },
+     "n_anc": 225
+    },
+    "FSC": {
+     "time_lb": 8.0,
+     "time_ub": 14,
+     "depth_lb": 8,
+     "depth_ub": 14,
+     "classes": 2,
+     "gates": {
+      "INIT_X": 449,
+      "CNOT": 3654,
+      "MEAS_X": 449,
+      "INIT_Z": 480,
+      "MEAS_Z": 480
+     },
+     "n_anc": 929
+    }
+   },
+   "U_time": 6,
+   "U_gates": {
+    "CNOT": 1712,
+    "T": 646,
+    "TDG": 647
+   },
+   "out_time": 2,
+   "out_gates": {
+    "MEAS_Z": 450,
+    "CZ": 392
+   },
+   "xcorr_time": 1
+  }
+ }
+}
