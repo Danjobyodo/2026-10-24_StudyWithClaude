@@ -3,8 +3,8 @@ from nbutil import *
 cells = [md(r'''
 # D4_switching_validation — Kobayashi方式の正当性検証
 
-メインの資源計数（`D4_switching_main.ipynb`）とは**独立に**、符号・論理ゲート・プロトコル・測定回路の正しさを確認する。
-各検査は `record(name, passed, detail)` で記録し、最後に `results/validation_d4.json` に保存する（比較ノートはこれを読み、検証状況を表示する）。
+資源計数（`resource_analysis.ipynb` 第I部）とは**独立に**、符号・論理ゲート・プロトコル・測定回路の正しさを確認する。
+各検査は `record(name, passed, detail)` で記録し、最後に `results/validation_d4.json` に保存する（`resource_analysis.ipynb` はこれを読み、検証状況を表示する）。
 
 | ID | 内容 | 方法 |
 |---|---|---|
@@ -219,11 +219,13 @@ $$|E|\ \ge\ |t| + \min_{\ell:\ \text{logical }Z}|\ell\setminus(Q_f\cup t)|=:LB_t
 for L in range(3, 7 if FULL_KL else 6):
     t0 = time.time()
     P_ = D4Protocol(L)
-    lb, ts, det = kl_distance_lower_bound(P_.d4, L - 1, P_.frozen)
+    lb, ts, det, stop = kl_distance_lower_bound(P_.d4, L - 1, P_.frozen)
     dz, dx, _, _ = distances(P_.d4)
-    ok = (lb is None or lb >= L) and dz == L and dx >= L
+    # stop is 'infeasible' or 'min weight > wmax': the enumeration ended because the solver
+    # proved there is no further t (any other solver status raises inside _milp_binary)
+    ok = stop in ('infeasible', 'min weight > wmax') and (lb is None or lb >= L) and dz == L and dx >= L
     record(f'V5b L={L}: every Pauli error of weight <= L-1 satisfies Knill-Laflamme -> D4-phase distance = L',
-           ok, f'{len(ts)} stabilizer shifts of weight <= {L-1} enumerated; min LB_t = {lb}; d_Z = {dz}; X-shift = {dx}; {time.time()-t0:.0f}s')"""),
+           ok, f'{len(ts)} stabilizer shifts of weight <= {L-1} enumerated (stop: {stop}); min LB_t = {lb}; d_Z = {dz}; X-shift = {dx}; {time.time()-t0:.0f}s')"""),
     md(r'''## V6. transversal $U=WV$（式(5)(8)）
 
 各生成元 $S$ について、[KZH] SM の式（permuting stabilizers）が予言する像 $S'$（$S^r\to S^rS^g$, $S^g\to S^g$, $S^b\to S^gS^b$, $\mathcal L_{rb}$ 上の $S^rS^b\to S^rS^b$）と $USU^\dagger$ が $C_Z$ 上で一致することを、**位相差が依存する量子ビットへの $C_Z$ の射影を厳密に全列挙**して確認する。

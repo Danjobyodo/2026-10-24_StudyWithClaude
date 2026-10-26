@@ -1,126 +1,5 @@
 from nbutil import *
 
-main = [md(r'''
-# MSD_15to1_main — Litinski方式：15-to-1 magic state distillation の資源計数
-
-**目的**：Litinski *A Game of Surface Codes* [Lit] Sec. 3 の 15-to-1 プロトコル（Fig. 15 の回路を Fig. 17c の 11 tiles 配置で実行）を、
-1. **tile モデル**（[Lit] の計数：1 tile = $d^2$ データ量子ビット（測定量子ビット込みで $2d^2$）、1 time step (τ) = $d$ code cycles）、
-2. **物理モデル**（11 回の多パッチ測定 $P\otimes Z_m$ を Fig. 17c の配置上で**検査レベルまで明示的に構成**し（正しさは検証ノート M9）、各回転の量子ビット数・CNOT 数・ラウンドの物理時間（D4 側と同じスケジューラ）を数える。$Z_m\otimes Y_0$ の twist 継ぎ目の検査だけは構成していない）
-の2通りで計数する。正しさの検証は `MSD_15to1_validation.ipynb`。
-
-**15-to-1 の抽象回路（Reed–Muller 符号上の回路）だけを数えて lattice surgery の物理コストと同一視することはしない**：ここで数えるのは Fig. 17c の配置上の操作である。
-
-### 段階（Fig. 17c）
-| 段階 | 内容 | 時間 | 出所 |
-|---|---|---|---|
-| L0 | （比較Bのみ）qubits 1–4 への $|m\rangle$ 注入（並列） | $t_{\rm inj}$ | [Lit] App. A（Li の方法、3+3 cycles、$d$ に依存しない） |
-| L1 | qubit 5 を $|+\rangle$ に初期化 | 0τ | [Lit] Sec. 1 |
-| L2.k | auto-corrected π/8 回転 k（k=1..11）：$P\otimes Z_m$ と $Z_m\otimes Y_0$ の格子手術 | 1τ = $d$ ラウンド | [Lit] Fig. 17b,c |
-| L2.ka | （比較Bのみ）回転 k 用の $|m\rangle$ 注入（11-tile 配置では直列） | $t_{\rm inj}$ | [Lit] Sec. 3.3 "Caveat" |
-| L2.kb | $|0\rangle$ の X/Z 測定、$|m\rangle$ の X 測定 | 0τ（測定1層） | [Lit] |
-| L3 | qubits 1–4 の X 測定 | 0τ | [Lit] |
-| L4 | 論理 $\bar X$（Pauli フレーム）で $T^\dagger|+\rangle\to T|+\rangle$ | 0 | 本研究（D4 側と同じ扱い） |
-
-**比較A**：入力 $|m\rangle$ は供給済み（L0, L2.ka を含めない）。**比較B**：注入時間と物理 T ゲート（15個）を含める。古典処理時間は両比較とも 0（**仮定**）。
-'''),
-    code(SETUP), code(INSTALL), code(PLOTSTYLE),
-    *embedded_lib_cells('common_lib.py', 'msd_lib.py'),
-    code(r'''QUICK = False
-D_LIST = [3, 5, 7, 9, 11, 13, 15] if not QUICK else [3, 5, 7]
-DUR = dict(DUR_UNIT)
-PARAMS = dict(DEFAULT_PARAMS)
-print(PARAMS)'''),
-    md(r'''## 1. 論理回路（式(1) → Fig. 15）
-式(1)の行列 $M$ の列ごとに $Z$ 型 π/8 回転を置く。1列目〜4列目（重み1）は qubits 4,3,2,1 の初期状態 $|m\rangle$ に吸収され、残り 11 列が Fig. 15 の 11 回転になる（[Lit] Sec. 3.1）。'''),
-    code(r'''rots = fig15_rotations()
-pd.DataFrame([{'rotation': k + 1, **{f'q{i + 1}': ('Z' if i in r else '1') for i in range(5)}} for k, r in enumerate(rots)])'''),
-    md(r'''## 2. tile モデル（Fig. 17c の再計数）
-配置を 3×5 の格子として転記した（`FIG17C_*`）。灰色の未使用 tile は数えない。'''),
-    code(r'''sched = tile_schedule()
-used = tiles_used(sched)
-n_tiles = len(used); n_tau = sum(t for _, t, _ in sched)
-print(f'tiles used = {n_tiles}, time steps = {n_tau} tau, tile*tau = {n_tiles * n_tau}')
-print(f'leading-order space-time cost: {n_tiles * n_tau} d^3 (data qubits x cycles; [Lit] 121 d^3)'
-      f' / {2 * n_tiles * n_tau} d^3 (incl. measurement qubits, 2d^2 per tile, [Lit] Sec. 4.3)')
-fig, axes = plt.subplots(1, 3, figsize=(12, 2.8))
-colors = {'q1': C_LIT, 'q2': C_LIT, 'q3': C_LIT, 'q4': C_LIT, 'q5': C_AUX, 'm': '#eda100', 'zero': '#898781', 'anc': '#e4e3df'}
-for ax, (title, lay) in zip(axes, [('Step 1 (0 tau)', FIG17C_STEP1), ('rotation step (1 tau each, x11)', FIG17C_ROTATION),
-                                   ('after rotation / readout (0 tau)', FIG17C_FINAL)]):
-    for i, row in enumerate(lay):
-        for j, lab in enumerate(row):
-            fc = colors.get(lab, '#fcfcfb') if lab else '#f0efec'
-            ax.add_patch(plt.Rectangle((j, 2 - i), 0.96, 0.96, fc=fc, ec='#52514e', lw=0.8))
-            if lab: ax.text(j + 0.48, 2 - i + 0.48, {'zero': '|0>', 'm': '|m>', 'anc': 'ancilla'}.get(lab, lab), ha='center', va='center', fontsize=9)
-    ax.set_xlim(0, 5); ax.set_ylim(0, 3); ax.set_aspect('equal'); ax.axis('off'); ax.set_title(title, fontsize=10)
-plt.suptitle(f'Fig. 17c layout as transcribed: {n_tiles} tiles used', fontsize=11)
-plt.tight_layout(); plt.savefig(f'{FIGURES}/msd_fig17c_layout.png', dpi=150); plt.show()'''),
-    md(r'''## 3. tile → 物理量子ビット・cycle への対応
-
-| 量 | tile モデル | 物理モデル（本研究、明示的構成） |
-|---|---|---|
-| 1 tile | $d^2$ データ（[Lit] Sec. 1）、$2d^2$ 測定込み（[Lit] Sec. 4.3） | $d\times d$ データ量子ビットの領域 |
-| qubits 1–5 | 1 tile ずつ | 回転表面符号パッチ。補助帯に面する辺を「$Z$ 辺」（重み2 の $X$ 検査）にする |
-| $|m\rangle$ | 2 tiles | 2 tile の縦長パッチ。角を移動（[Lit] Fig. 2b）し、右辺下半分（補助帯側）と左辺（$|0\rangle$ 側）を $Z$ 辺にする |
-| $|0\rangle$ | 2 tiles | 縦長の回転表面符号パッチ |
-| 補助帯 | 2 tiles | 全量子ビットを $|+\rangle$ に初期化し、補助帯に触れる plaquette（合併領域に制限）を新たに測る。参加しないパッチに面する辺・自由辺は「$X$ 辺」（重み2 の $Z$ 検査）、両側が自由な角の量子ビットは $Z$ 測定 |
-| 合併中に測る検査 | — | 新しい検査 $N$ ＋ $N$ と可換な旧パッチ検査 ＋ 可換部分群を完成させる旧検査の積（すべて重み ≤ 4、$\mathbb F_2$ 計算で決定） |
-| 1τ | $d$ code cycles | $d$ ラウンド（`FT_ref`）／1 ラウンド（`NL_min`） |
-| 1 ラウンドの物理時間 | — | 各回転の検査集合を D4 側と同じ可換クラス・スケジューラで計算（下界・上界） |
-
-**構成していない部分**：$|m\rangle$ と $|0\rangle$ の間の $Z_m\otimes Y_0$ 測定（twist 欠陥を含む継ぎ目、$O(d)$ 個の測定量子ビット）。`source` 列と比較ノートの「未計上コスト」に明記する。
-'''),
-    code(r'''stage_df, sum_df, per_d = msd_resource_tables(D_LIST, DUR, PARAMS)
-stage_df.to_csv(f'{RESULTS}/msd_stage_costs.csv', index=False)
-sum_df.to_csv(f'{RESULTS}/msd_summary.csv', index=False)
-per_d.to_csv(f'{RESULTS}/msd_per_d.csv', index=False)
-per_d'''),
-    md(r'''### 3.1 要約（`FT_ref`、データ＋測定量子ビット）'''),
-    code(r'''cols = ['d', 'comparison', 'level', 'peak_qubits', 'rounds', 'time_lb', 'time_ub', 'V_qubit_round', 'V_qubit_time_lb', 'V_qubit_time_ub', 'nonclifford']
-sum_df[(sum_df.model == 'FT_ref') & (~sum_df.data_only) & (sum_df.gateset == 'primitive')][cols]'''),
-    md(r'''## 4. スケーリング（厳密な多項式の同定）と [Lit] の値の再現'''),
-    code(r'''import sympy
-x = sympy.Symbol('d')
-def identify(values):
-    Ls = sorted(values)
-    p = sympy.interpolate([(L, values[L]) for L in Ls[:4]], x)
-    return sympy.expand(p), all(sympy.nsimplify(p.subs(x, L) - values[L]) == 0 for L in Ls)
-rows = []
-for level in ['tile', 'physical']:
-    for data_only in [True, False]:
-        for comp in ['A', 'B']:
-            for model in ['FT_ref', 'NL_min']:
-                sel = sum_df[(sum_df.level == level) & (sum_df.data_only == data_only) & (sum_df.comparison == comp) &
-                             (sum_df.model == model) & (sum_df.gateset == 'primitive')]
-                for q in ['V_qubit_round', 'peak_qubits', 'rounds']:
-                    p, ok = identify({int(dd): int(round(v)) for dd, v in zip(sel.d, sel[q])})
-                    rows.append(dict(level=level, data_only=data_only, comparison=comp, model=model, quantity=q,
-                                     polynomial=str(p), exact_on_all_points=ok))
-poly = pd.DataFrame(rows); poly.to_csv(f'{RESULTS}/msd_polynomials.csv', index=False)
-poly[(poly.model == 'FT_ref') & (poly.quantity == 'V_qubit_round')]'''),
-    md(r'''tile モデル・データのみ・比較A で $V = 121\,d^3$（[Lit] の値）、測定量子ビット込みで $242\,d^3$、物理モデル（明示的構成）では $242d^3-66d$（各回転の量子ビット数は $22d^2-6$）となる。旧版の近似（$22d^2-5$）との差は 1 量子ビット／回転で、ラウンドの物理時間も同じ（下界 6、上界 12）だった。比較Bでは注入時間 $12\,t_{\rm inj}$ cycles 分（$d$ に依存しない）が加わる。
-
-## 5. 図：時間に沿った量子ビット使用数（$d=9$、`FT_ref`、物理モデル、比較B）'''),
-    code(r'''d_show = 9 if 9 in D_LIST else D_LIST[-1]
-sel = stage_df[(stage_df.d == d_show) & (stage_df.model == 'FT_ref') & (stage_df.comparison == 'B') &
-               (stage_df.level == 'physical') & (~stage_df.data_only) & (stage_df.gateset == 'primitive')]
-t, xs, ys = 0, [], []
-for _, r in sel.iterrows():
-    xs += [t, t + r.rounds]; ys += [r.qubits, r.qubits]; t += r.rounds
-fig, ax = plt.subplots(figsize=(9, 3))
-ax.fill_between(xs, ys, step=None, color=C_LIT, alpha=0.25, lw=0)
-ax.plot(xs, ys, color=C_LIT)
-ax.set_xlabel('time [rounds = surface-code cycles]'); ax.set_ylabel('active physical qubits')
-ax.set_title(f'15-to-1 (Fig. 17c), d={d_show}: occupancy; area = qubit·round volume (comparison B incl. injection)')
-plt.tight_layout(); plt.savefig(f'{FIGURES}/msd_occupancy_timeline.png', dpi=150); plt.show()'''),
-    md(r'''## 6. 解釈と注意
-* tile モデルは [Lit] の値（11 tiles, 11τ, $121d^3$）を再現する（検証ノートで確認）。
-* 物理モデル（明示的構成）との差は $O(d)$ の下位項のみ。ただし $Z_m\otimes Y_0$ の twist 継ぎ目の検査（$O(d)$ 個）は未計上。
-* **含めていない費用**：古典処理（デコード・測定結果に応じた基底選択）の時間、Fig. 18 の追加 2×2 ブロックによる注入の並列化（tile 数が増える代わりに注入待ちが消える）、$Z_m\otimes Y_0$ の twist 欠陥の詳細な安定化子配置。
-* ノイズが無い場合は蒸留そのものが不要（理想入力 $|m\rangle$ がそのまま出力品質）であり、ここでの比較は**回路構造と資源の比較**である（§3.3 の限界）。
-'''),
-]
-save('MSD_15to1_main.ipynb', main)
-
 val = [md(r'''
 # MSD_15to1_validation — Litinski 15-to-1 の正当性・計数の検証
 
@@ -129,8 +8,8 @@ val = [md(r'''
 | M1 | 式(2) の三直交性、式(4) が式(2) と（行変形＋列の並べ替えで）同値であること、式(4)→式(1)（puncturing）、式(1) → Fig. 15 の 11 回転（図からの手転記と照合） |
 | M2 | 理想入力 → 測定結果は決定的に +1、出力 $T^\dagger|+\rangle$（[Lit] "actually $T^\dagger$"） |
 | M3 | 15 量子ビット符号（Fig. 14）：transversal $T$ = 論理 $T^\dagger$、5 量子ビット回路と同じ出力 |
-| M4 | 誤り検出：1・2個の $Z$ 誤りは全て検出、3個で未検出 35 通り（$35p^3$） |
-| M5 | selective π/4（Fig. 17a）と auto-corrected π/8（Fig. 17b）：全測定分岐で Pauli 補正のみで正しい |
+| M4 | 誤り検出：1・2個の $Z$ 誤りは全て検出、3個で未検出 35 通り（$35p^3$）、未検出の 35 通りは全て誤った出力 |
+| M5 | selective π/4（Fig. 17a）と auto-corrected π/8（Fig. 17b）：選んだ 4 種の Pauli 積とランダム入力について、全測定分岐で Pauli 補正のみで正しい |
 | M6 | tile 数 11、time step 11、$121d^3$ の再計数（2通りの数え方） |
 | M7 | 物理レベルの格子手術（stim）：2 パッチ＋1 tile の合併で $\bar Z_1\bar Z_2$ が測定される；量子ビット増分 |
 | M8 | 回転表面符号パッチの量子ビット数・CNOT 数の閉形式、tile↔物理の換算の一貫性 |
@@ -195,12 +74,19 @@ def accept(err):
     o = kron_all([np.array([1, 1]) / np.sqrt(2)] * 4).reshape(-1).conj() @ st.reshape(16, 2)
     return p, o / np.linalg.norm(o)
 und = {}
+ideal = accept(())[1]
+wrong3 = 0
 for w in (1, 2, 3):
-    und[w] = sum(accept(e)[0] > 1e-9 for e in itertools.combinations(range(15), w))
-record('M4 all 1- and 2-error patterns detected; 35 undetected 3-error patterns (output error 35 p^3)',
-       und[1] == 0 and und[2] == 0 and und[3] == 35, und)'''),
+    und[w] = 0
+    for e in itertools.combinations(range(15), w):
+        p, o = accept(e)
+        if p > 1e-9:
+            und[w] += 1
+            wrong3 += (w == 3 and not equal_up_to_phase(o, ideal))
+record('M4 all 1- and 2-error patterns detected; 35 undetected 3-error patterns, all with a wrong output (output error 35 p^3)',
+       und[1] == 0 and und[2] == 0 and und[3] == 35 and wrong3 == 35, f'undetected {und}; wrong outputs among undetected weight-3: {wrong3}')'''),
     md(r'''## M5. selective π/4（Fig. 17a）と auto-corrected π/8（Fig. 17b）
-全ての測定結果の分岐について、補正後のデータ状態が目的の回転と一致するか（必要な補正が Pauli $P$ だけか）を確認する。'''),
+選んだ 4 種の Pauli 積 $P$（1〜3 量子ビット）とランダムな入力状態について、**全ての測定結果の分岐**で、補正後のデータ状態が目的の回転と一致するか（必要な補正が Pauli $P$ だけか）を確認する。任意の $P$・任意の入力についての証明ではない（線形性により入力は 1 つのランダム状態で十分だが、$P$ は代表例のみ）。'''),
     code(r'''def selective_pi4(P_data, psi, basis):
     k = int(np.log2(len(psi))); n = k + 1; a = k
     st0 = np.kron(psi, KET0)
@@ -226,7 +112,7 @@ for P in [{0: 'Z'}, {0: 'Z', 1: 'Z'}, {0: 'X', 1: 'Y'}, {0: 'Y', 1: 'Z', 2: 'X'}
     br = auto_corrected_pi8(P, psi)
     ok &= all(b['correction'] != 'FAIL' for b in br) and abs(sum(b['prob'] for b in br) - 1) < 1e-9
     table += [dict(P=str(P), **{kk: b[kk] for kk in ['PZ', 'ZY', 'anc_basis', 'anc', 'Xm', 'correction']}, prob=round(b['prob'], 4)) for b in br]
-record('M5 selective pi/4 and auto-corrected pi/8: every branch correct up to a Pauli P correction', ok)
+record('M5 selective pi/4 and auto-corrected pi/8 (4 sample Pauli products, random input): every branch correct up to a Pauli P correction', ok)
 pd.DataFrame(table).head(16)'''),
     md(r'''## M6. tile 数・time step の再計数
 (a) 格子転記 `FIG17C_*` から数える。(b) [Lit] 本文の記述（「4 qubits + 1 output」「左の 2×2 ブロックは $|m\rangle$ と $|0\rangle$ 用」「2 tiles は多体測定のアンシラ」「11 回転 × 1τ」）から独立に数える。'''),

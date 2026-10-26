@@ -897,7 +897,10 @@ def U_target(lat, lab):
 # ---------------------------------------------------------- Knill-Laflamme distance lower bound
 def _milp_binary(c_obj, A_eq_mod2, rhs_mod2, extra_ub=None, fixed_zero=()):
     """min c.x over binary x subject to A x = rhs (mod 2) (rows of A_eq_mod2), and optional
-    linear constraints extra_ub = [(row, ub), ...] (row.x <= ub).  Returns (value, x) or (None, None)."""
+    linear constraints extra_ub = [(row, ub), ...] (row.x <= ub).
+    Returns (value, x) if an optimum was found, (None, None) only if the problem is proven
+    infeasible (scipy status 2).  Any other status (time/iteration limit, unbounded, numerical
+    failure) raises RuntimeError, so that a solver failure is never mistaken for "no solution"."""
     from scipy.optimize import milp, LinearConstraint, Bounds
     A = np.array(A_eq_mod2, dtype=float)
     m, n = A.shape
@@ -910,15 +913,19 @@ def _milp_binary(c_obj, A_eq_mod2, rhs_mod2, extra_ub=None, fixed_zero=()):
     for i in fixed_zero:
         ub_[i] = 0
     res = milp(c, constraints=cons, integrality=np.ones(nv), bounds=Bounds(np.zeros(nv), ub_))
-    if res.status != 0:
+    if res.status == 2:
         return None, None
+    if res.status != 0:
+        raise RuntimeError(f'MILP solver did not finish (status {res.status}: {res.message})')
     return round(res.fun), np.round(res.x[:n]).astype(np.uint8)
 
 
 def low_weight_stabilizer_shifts(cd, wmax, frozen=()):
     """Exact enumeration (MILP with no-good cuts) of all t in span(S) with 1 <= |t| <= wmax,
     where span(S) = C_Z  intersect  z_log^perp  (k = 1).  Frozen qubits are excluded
-    (an X on a frozen qubit violates its single-qubit Z check, so t would leave C_Z)."""
+    (an X on a frozen qubit violates its single-qubit Z check, so t would leave C_Z).
+    Returns (found, stop) where stop records why the enumeration ended:
+    'infeasible' (no further t with 1 <= |t| <= wmax) or 'min weight > wmax'."""
     cols = [c for c in cd.cols if c not in set(frozen)]
     H = np.vstack([cd.HZ[:, cols], cd.z_log[cols][None, :]])
     H = H[np.any(H, axis=1)]
@@ -928,7 +935,11 @@ def low_weight_stabilizer_shifts(cd, wmax, frozen=()):
     found = []
     while True:
         val, x = _milp_binary(np.ones(n), H, rhs, extra_ub=cuts)
-        if val is None or val > wmax:
+        if val is None:
+            stop = 'infeasible'
+            break
+        if val > wmax:
+            stop = 'min weight > wmax'
             break
         sup = np.nonzero(x)[0]
         t = np.zeros(cd.lat.n, dtype=np.uint8)
@@ -937,7 +948,7 @@ def low_weight_stabilizer_shifts(cd, wmax, frozen=()):
         row = -np.ones(n)
         row[sup] = 1
         cuts.append((row, len(sup) - 1))                  # exclude exactly this vector
-    return found
+    return found, stop
 
 
 def kl_distance_lower_bound(cd, wmax, frozen=()):
@@ -950,9 +961,10 @@ def kl_distance_lower_bound(cd, wmax, frozen=()):
         so P E P = P F_c Z^u P.  Expanding (-1)^{f_c} in Z-type Paulis Z^v with v supported on
         Q_f = supp(f_c), a violation of KL requires some v + u to be a logical Z operator l.
         Hence |E| >= |t| + |u \ t| >= |t| + min_l |l \ (Q_f u t)|  =: LB_t.
-    Returns (min over enumerated t of LB_t, details).  t = 0 is covered by d_Z."""
+    Returns (min over enumerated t of LB_t, ts, details, stop) where stop is the termination
+    reason of the enumeration (see low_weight_stabilizer_shifts).  t = 0 is covered by d_Z."""
     lat = cd.lat
-    ts = low_weight_stabilizer_shifts(cd, wmax, frozen)
+    ts, stop = low_weight_stabilizer_shifts(cd, wmax, frozen)
     cols = [c for c in cd.cols if c not in set(frozen)]
     Srows = cd.S[:, cols]
     Srows = Srows[np.any(Srows, axis=1)]
@@ -968,10 +980,11 @@ def kl_distance_lower_bound(cd, wmax, frozen=()):
         A = np.vstack([Srows, cd.t_log[cols][None, :]])
         rhs = np.concatenate([np.zeros(len(Srows)), [1.0]])
         val, _ = _milp_binary(cost, A, rhs)
+        assert val is not None                            # a logical Z always exists
         lb = int(t.sum()) + val
         details.append(dict(weight_t=int(t.sum()), Qf_size=len(Qf), LB=lb))
         best = lb if best is None else min(best, lb)
-    return best, ts, details
+    return best, ts, details, stop
 
 
 # ---------------------------------------------------------- full resource tables (used by main + comparison)

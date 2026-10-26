@@ -3,5 +3,5 @@ Usage: python tools/build_all.py   (does not execute the notebooks)"""
 import os, runpy
 HERE = os.path.dirname(os.path.abspath(__file__))
 os.chdir(HERE)
-for b in ['build_d4main.py', 'build_d4val.py', 'build_msd.py', 'build_cmp.py']:
+for b in ['build_d4val.py', 'build_msdval.py', 'build_analysis.py']:
     runpy.run_path(os.path.join(HERE, b), run_name='__main__')

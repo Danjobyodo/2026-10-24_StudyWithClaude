@@ -41,11 +41,11 @@
    "status": "PASS",
    "detail": "[ 0.707107 -0.707107  0.      ]"
   },
-  "M4 all 1- and 2-error patterns detected; 35 undetected 3-error patterns (output error 35 p^3)": {
+  "M4 all 1- and 2-error patterns detected; 35 undetected 3-error patterns, all with a wrong output (output error 35 p^3)": {
    "status": "PASS",
-   "detail": "{1: 0, 2: 0, 3: np.int64(35)}"
+   "detail": "undetected {1: 0, 2: 0, 3: 35}; wrong outputs among undetected weight-3: 35"
   },
-  "M5 selective pi/4 and auto-corrected pi/8: every branch correct up to a Pauli P correction": {
+  "M5 selective pi/4 and auto-corrected pi/8 (4 sample Pauli products, random input): every branch correct up to a Pauli P correction": {
    "status": "PASS",
    "detail": ""
   },
@@ -95,7 +95,7 @@
   },
   "M7 d=5 seed=2: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=-1, qubits=149"
+   "detail": "after=1, qubits=149"
   },
   "M7 d=5: one gap tile adds 2d^2+1 qubits to the merged region (used for the ancilla strip)": {
    "status": "PASS",
@@ -103,7 +103,7 @@
   },
   "M7 d=7 seed=0: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=1, qubits=293"
+   "detail": "after=-1, qubits=293"
   },
   "M7 d=7 seed=1: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
@@ -111,7 +111,7 @@
   },
   "M7 d=7 seed=2: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=-1, qubits=293"
+   "detail": "after=1, qubits=293"
   },
   "M7 d=7: one gap tile adds 2d^2+1 qubits to the merged region (used for the ancilla strip)": {
    "status": "PASS",
@@ -127,15 +127,15 @@
   },
   "M9 d=3: all 11 multi-patch measurements P(x)Z_m are valid lattice surgeries (exact F2 criteria, merged-code distance >= d)": {
    "status": "PASS",
-   "detail": "merged (d_X, d_Z) = [(3, 3), (4, 3)]; 5s"
+   "detail": "merged (d_X, d_Z) = [(3, 3), (4, 3)]; 6s"
   },
   "M9 d=5: all 11 multi-patch measurements P(x)Z_m are valid lattice surgeries (exact F2 criteria, merged-code distance >= d)": {
    "status": "PASS",
-   "detail": "merged (d_X, d_Z) = [(5, 5), (8, 5)]; 53s"
+   "detail": "merged (d_X, d_Z) = [(5, 5), (8, 5)]; 70s"
   },
   "M9 d=7: all 11 multi-patch measurements P(x)Z_m are valid lattice surgeries (exact F2 criteria)": {
    "status": "PASS",
-   "detail": "distance not computed at this d; 2s"
+   "detail": "distance not computed at this d; 3s"
   },
   "M9 d=3: stim - O_k random before, deterministic after one merged round, equal to predicted product (11 rotations x 2 seeds)": {
    "status": "PASS",
