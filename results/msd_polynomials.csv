@@ -35,15 +35,15 @@ physical,True,B,FT_ref,rounds,11*d + 72,True
 physical,True,B,NL_min,V_qubit_round,229*d**2,True
 physical,True,B,NL_min,peak_qubits,11*d**2,True
 physical,True,B,NL_min,rounds,23,True
-physical,False,A,FT_ref,V_qubit_round,242*d**3 - 55*d,True
-physical,False,A,FT_ref,peak_qubits,22*d**2 - 5,True
+physical,False,A,FT_ref,V_qubit_round,242*d**3 - 66*d,True
+physical,False,A,FT_ref,peak_qubits,22*d**2 - 6,True
 physical,False,A,FT_ref,rounds,11*d,True
-physical,False,A,NL_min,V_qubit_round,242*d**2 - 55,True
-physical,False,A,NL_min,peak_qubits,22*d**2 - 5,True
+physical,False,A,NL_min,V_qubit_round,242*d**2 - 66,True
+physical,False,A,NL_min,peak_qubits,22*d**2 - 6,True
 physical,False,A,NL_min,rounds,11,True
-physical,False,B,FT_ref,V_qubit_round,242*d**3 + 1296*d**2 - 55*d - 504,True
-physical,False,B,FT_ref,peak_qubits,22*d**2 - 5,True
+physical,False,B,FT_ref,V_qubit_round,242*d**3 + 1296*d**2 - 66*d - 504,True
+physical,False,B,FT_ref,peak_qubits,22*d**2 - 6,True
 physical,False,B,FT_ref,rounds,11*d + 72,True
-physical,False,B,NL_min,V_qubit_round,458*d**2 - 139,True
-physical,False,B,NL_min,peak_qubits,22*d**2 - 5,True
+physical,False,B,NL_min,V_qubit_round,458*d**2 - 150,True
+physical,False,B,NL_min,peak_qubits,22*d**2 - 6,True
 physical,False,B,NL_min,rounds,23,True

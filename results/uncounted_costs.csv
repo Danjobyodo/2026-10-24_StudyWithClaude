@@ -1,0 +1,10 @@
+protocol,comparison,uncounted_cost,status
+Kobayashi_D4,A,classical decoding / control latency,"both comparisons, both protocols"
+Kobayashi_D4,A,JIT-decoder classical processing,not modelled
+Kobayashi_D4,B,classical decoding / control latency,"both comparisons, both protocols"
+Kobayashi_D4,B,JIT-decoder classical processing,not modelled
+Kobayashi_D4,B,FSC -> standard rotated surface-code patch conversion,UNRESOLVED: no protocol constructed
+Litinski_15to1,A,classical decoding / control latency,"both comparisons, both protocols"
+Litinski_15to1,A,twist-based Z_m (x) Y_0 seam checks between |m> and |0>,"O(d) measurement qubits, not constructed"
+Litinski_15to1,B,classical decoding / control latency,"both comparisons, both protocols"
+Litinski_15to1,B,twist-based Z_m (x) Y_0 seam checks between |m> and |0>,"O(d) measurement qubits, not constructed"

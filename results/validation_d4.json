@@ -107,7 +107,19 @@
   },
   "V5 D4 L=2 Knill-Laflamme: all weight-1 Paulis correctable-detectable, some weight-2 logical (distance = 2)": {
    "status": "PASS",
-   "detail": "violations {1: 0, 2: 2}, 86s"
+   "detail": "violations {1: 0, 2: 2}, 81s"
+  },
+  "V5b L=3: every Pauli error of weight <= L-1 satisfies Knill-Laflamme -> D4-phase distance = L": {
+   "status": "PASS",
+   "detail": "1 stabilizer shifts of weight <= 2 enumerated; min LB_t = 5; d_Z = 3; X-shift = 6; 0s"
+  },
+  "V5b L=4: every Pauli error of weight <= L-1 satisfies Knill-Laflamme -> D4-phase distance = L": {
+   "status": "PASS",
+   "detail": "15 stabilizer shifts of weight <= 3 enumerated; min LB_t = 5; d_Z = 4; X-shift = 7; 2s"
+  },
+  "V5b L=5: every Pauli error of weight <= L-1 satisfies Knill-Laflamme -> D4-phase distance = L": {
+   "status": "PASS",
+   "detail": "84 stabilizer shifts of weight <= 4 enumerated; min LB_t = 6; d_Z = 5; X-shift = 8; 42s"
   },
   "V6 L=1: U S U^dag = S' on C_Z for all 2 generators; V(C_Z)=C_Z; logical phases (pi/4 units) = [0,7] (T^dag)": {
    "status": "PASS",
@@ -159,7 +171,7 @@
   },
   "V7 L=2: exact protocol, 200 random inputs/branches -> fidelity 1 with T^dag action": {
    "status": "PASS",
-   "detail": "min F = 1.000000000000, 105s"
+   "detail": "min F = 1.000000000000, 102s"
   },
   "V7 L=2 input |0>: output = T^dag |0>": {
    "status": "PASS",
@@ -197,6 +209,14 @@
    "status": "PASS",
    "detail": "min F = 0.5011"
   },
+  "V7b L=3: protocol circuit on configuration inputs reproduces the phase formula F(a) (incl. T^dag between cosets)": {
+   "status": "PASS",
+   "detail": "18 same-branch pairs, 0s"
+  },
+  "V7b L=4: protocol circuit on configuration inputs reproduces the phase formula F(a) (incl. T^dag between cosets)": {
+   "status": "PASS",
+   "detail": "12 same-branch pairs, 50s"
+  },
   "V8 L=1: F invariant under all 1 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
    "detail": "max local configs 4, F0=0, F1=7, 0.0s"
@@ -211,23 +231,23 @@
   },
   "V8 L=4: F invariant under all 31 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
-   "detail": "max local configs 4096, F0=0, F1=7, 0.7s"
+   "detail": "max local configs 4096, F0=0, F1=7, 0.6s"
   },
   "V8 L=5: F invariant under all 49 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
-   "detail": "max local configs 16384, F0=0, F1=7, 2.0s"
+   "detail": "max local configs 16384, F0=0, F1=7, 2.1s"
   },
   "V8 L=6: F invariant under all 71 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
-   "detail": "max local configs 16384, F0=0, F1=7, 4.0s"
+   "detail": "max local configs 16384, F0=0, F1=7, 4.1s"
   },
   "V8 L=7: F invariant under all 97 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
-   "detail": "max local configs 16384, F0=0, F1=7, 6.6s"
+   "detail": "max local configs 16384, F0=0, F1=7, 7.1s"
   },
   "V8 L=8: F invariant under all 127 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
-   "detail": "max local configs 16384, F0=0, F1=7, 13.0s"
+   "detail": "max local configs 16384, F0=0, F1=7, 13.7s"
   },
   "V9 L=3: every X-type gadget (unpruned) implements the projective measurement of its Clifford stabilizer": {
    "status": "PASS",
@@ -263,7 +283,8 @@
   }
  },
  "not_verified": [
-  "Knill-Laflamme distance of the D4 phase for L>=3",
+  "Knill-Laflamme distance of the D4 phase for L >= 6 (L >= 7 with FULL_KL=True)",
+  "full code-state simulation of the protocol for L >= 3 (V7b checks the circuit on configuration inputs, V8 proves the phase formula locally)",
   "fault tolerance / JIT decoder performance (noise not simulated)",
   "constants of the O(d) round counts",
   "FSC -> standard rotated-patch conversion"

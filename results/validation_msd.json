@@ -95,7 +95,7 @@
   },
   "M7 d=5 seed=2: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=-1, qubits=149"
+   "detail": "after=1, qubits=149"
   },
   "M7 d=5: one gap tile adds 2d^2+1 qubits to the merged region (used for the ancilla strip)": {
    "status": "PASS",
@@ -107,27 +107,52 @@
   },
   "M7 d=7 seed=1: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=-1, qubits=293"
+   "detail": "after=1, qubits=293"
   },
   "M7 d=7 seed=2: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=1, qubits=293"
+   "detail": "after=-1, qubits=293"
   },
   "M7 d=7: one gap tile adds 2d^2+1 qubits to the merged region (used for the ancilla strip)": {
    "status": "PASS",
    "detail": "99"
   },
-  "M8 rotated patch = 2d^2-1 qubits, 4d(d-1) CNOT/round; physical model peak = 22d^2-5 (vs tile model 22d^2), V = 11 d (22d^2-5)": {
+  "M8 rotated patch = 2d^2-1 qubits, 4d(d-1) CNOT/round; explicit physical model: 22d^2-6 qubits per rotation (tile model 22d^2), V = 11 d (22d^2-6)": {
    "status": "PASS",
    "detail": ""
   },
   "M8 surface-code round time bounds from the shared scheduler (lb=6: init+4 CNOT+meas)": {
    "status": "PASS",
    "detail": "{'time_lb': 6.0, 'time_ub': 12}"
+  },
+  "M9 d=3: all 11 multi-patch measurements P(x)Z_m are valid lattice surgeries (exact F2 criteria, merged-code distance >= d)": {
+   "status": "PASS",
+   "detail": "merged (d_X, d_Z) = [(3, 3), (4, 3)]; 4s"
+  },
+  "M9 d=5: all 11 multi-patch measurements P(x)Z_m are valid lattice surgeries (exact F2 criteria, merged-code distance >= d)": {
+   "status": "PASS",
+   "detail": "merged (d_X, d_Z) = [(5, 5), (8, 5)]; 55s"
+  },
+  "M9 d=7: all 11 multi-patch measurements P(x)Z_m are valid lattice surgeries (exact F2 criteria)": {
+   "status": "PASS",
+   "detail": "distance not computed at this d; 2s"
+  },
+  "M9 d=3: stim - O_k random before, deterministic after one merged round, equal to predicted product (11 rotations x 2 seeds)": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "M9 d=5: stim - O_k random before, deterministic after one merged round, equal to predicted product (11 rotations x 2 seeds)": {
+   "status": "PASS",
+   "detail": ""
+  },
+  "M9 fast measured-set construction (used for d up to 15) = verified construction (d=3,5,7); all checks weight <= 4": {
+   "status": "PASS",
+   "detail": ""
   }
  },
  "not_verified": [
-  "stabilizer-level layout of the Z_m (x) Y_0 twist-based surgery (counted via tile approximation)",
+  "stabilizer-level layout of the Z_m (x) Y_0 twist-based seam (O(d) measurement qubits not counted)",
+  "merged-code distance verified only for d = 3, 5 (validity criteria also for d = 7)",
   "classical processing latency",
   "Fig. 18 variant (extra 2x2 blocks) not modelled"
  ]
