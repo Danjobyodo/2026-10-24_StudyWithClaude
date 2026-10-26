@@ -4,7 +4,7 @@
 
 ## 1. 現在の構造（再利用できる部分）
 
-| 層 | 実装 | ノイズ拡張での再利用 |
+| 層 | 実装（埋め込みライブラリ／`tools/*.py` 内の名前） | ノイズ拡張での再利用 |
 |---|---|---|
 | 符号・安定化子の定義 | `d4_lib`: `D4Lattice`, `CodeData`, `PSOp`；`msd_lib`: `rotated_checks` | そのまま使える |
 | 測定ガジェット（物理回路） | `common_lib`: `clifford_x_gadget`, `z_check_gadget`, `pauli_check_gadget`；`d4_lib`: `D4Protocol.round_gadgets` | 誤り挿入位置（各ゲート後）をここに追加 |

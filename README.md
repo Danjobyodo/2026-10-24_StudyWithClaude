@@ -11,19 +11,22 @@
 
 | 順 | ノートブック | 役割 | 所要時間（目安） |
 |---|---|---|---|
-| – | `common_lib.ipynb`, `d4_lib.ipynb`, `msd_lib.ipynb` | 関数定義のみ（他のノートから `%run -i` で読み込む） | – |
 | 1 | `D4_switching_main.ipynb` | D4 符号・code switching の構成と段階別資源計数 | 約 1 分 |
 | 2 | `D4_switching_validation.ipynb` | D4 側の正当性検証（V1–V11、V5b・V7b を含む） | 約 10 分 |
 | 3 | `MSD_15to1_main.ipynb` | 15-to-1 の tile モデル・物理モデルの資源計数 | 数十秒 |
 | 4 | `MSD_15to1_validation.ipynb` | 15-to-1 側の正当性検証（M1–M9、多パッチ測定の物理レベル構成を含む） | 約 2 分 |
-| 5 | `resource_comparison.ipynb` | 比較表・グラフ・損益分岐・仮定一覧（1–4 の出力を読む） | 数十秒 |
+| 5 | `resource_comparison.ipynb` | 比較表・グラフ・損益分岐・感度・仮定一覧（資源表は自前で再計算） | 約 1 分 |
 
 出力：`results/`（CSV・JSON）、`figures/`（PNG）。各ノートの `QUICK = True` で小規模な動作確認ができる。乱数シードは `SEED = 20261024`。
 
+**各ノートブックは単独で実行できる**（共通コードを各ノートに埋め込んである）。他のファイルを置く必要はなく、実行順にも依存しない。上の番号は推奨順のみ。比較ノートは両方式の資源表を自分で再計算する。validation ノートの結果ファイル（`results/validation_*.json`）が同じフォルダにあれば、比較ノートで検証状況として表示する。
+
 ### Google Colab での実行
-1. すべての `.ipynb` を同じフォルダ（例：Google Drive の `MyDrive/D4_vs_MSD`）に置く。
-2. 各ノートの最初のセルのコメントに従い、そのフォルダを作業ディレクトリにする（`drive.mount` → `os.chdir`）。
-3. 上の順に上から実行する。`stim` などが無ければ 2 番目のセルが自動でインストールする（numpy, scipy, sympy, pandas, matplotlib は Colab 標準）。
+1. ノートブックを 1 つ開き（GitHub から直接、またはアップロード）、上から順に実行する。`stim` などが無ければ 2 番目のセルが自動でインストールする（numpy, scipy, sympy, pandas, matplotlib は Colab 標準）。
+2. Colab ではノートブックごとに別のランタイムになり、出力（`results/`, `figures/`）はランタイム終了で消える。残したい場合、またはノート間で結果ファイルを共有したい場合は、最初のセルのコメントに従って Google Drive をマウントし、全ノートで同じフォルダを作業ディレクトリにする。
+
+### 共通コードの保守（任意）
+埋め込まれた共通コードの元は `tools/` にある（`common_lib.py`, `d4_lib.py`, `msd_lib.py` と、ノートブックを生成する `build_*.py`）。共通コードを変更する場合は `tools/` のソースを編集して `python tools/build_all.py` を実行すると、全ノートブックの埋め込みコードが同じ内容で再生成される（研究の実行自体には不要）。
 
 ## 主な結果（**予備的評価**：特定の仮定のもとでの値）
 
