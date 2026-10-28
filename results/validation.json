@@ -107,7 +107,7 @@
   },
   "V5 D4 L=2 Knill-Laflamme: all weight-1 Paulis correctable-detectable, some weight-2 logical (distance = 2)": {
    "status": "PASS",
-   "detail": "violations {1: 0, 2: 2}, 108s"
+   "detail": "violations {1: 0, 2: 2}, 111s"
   },
   "V5b L=3: every Pauli error of weight <= L-1 satisfies Knill-Laflamme -> D4-phase distance = L": {
    "status": "PASS",
@@ -115,11 +115,11 @@
   },
   "V5b L=4: every Pauli error of weight <= L-1 satisfies Knill-Laflamme -> D4-phase distance = L": {
    "status": "PASS",
-   "detail": "15 stabilizer shifts of weight <= 3 enumerated (stop: infeasible); min LB_t = 5; d_Z = 4; X-shift = 7; 3s"
+   "detail": "15 stabilizer shifts of weight <= 3 enumerated (stop: infeasible); min LB_t = 5; d_Z = 4; X-shift = 7; 4s"
   },
   "V5b L=5: every Pauli error of weight <= L-1 satisfies Knill-Laflamme -> D4-phase distance = L": {
    "status": "PASS",
-   "detail": "84 stabilizer shifts of weight <= 4 enumerated (stop: infeasible); min LB_t = 6; d_Z = 5; X-shift = 8; 55s"
+   "detail": "84 stabilizer shifts of weight <= 4 enumerated (stop: infeasible); min LB_t = 6; d_Z = 5; X-shift = 8; 61s"
   },
   "V6 L=1: U S U^dag = S' on C_Z for all 2 generators; V(C_Z)=C_Z; logical phases (pi/4 units) = [0,7] (T^dag)": {
    "status": "PASS",
@@ -171,7 +171,7 @@
   },
   "V7 L=2: exact protocol, 200 random inputs/branches -> fidelity 1 with T^dag action": {
    "status": "PASS",
-   "detail": "min F = 1.000000000000, 171s"
+   "detail": "min F = 1.000000000000, 168s"
   },
   "V7 L=2 input |0>: output = T^dag |0>": {
    "status": "PASS",
@@ -215,7 +215,7 @@
   },
   "V7b L=4: protocol circuit on configuration inputs reproduces the phase formula F(a) (incl. T^dag between cosets)": {
    "status": "PASS",
-   "detail": "12 same-branch pairs, 73s"
+   "detail": "12 same-branch pairs, 74s"
   },
   "V8 L=1: F invariant under all 1 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
@@ -227,27 +227,27 @@
   },
   "V8 L=3: F invariant under all 17 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
-   "detail": "max local configs 2048, F0=0, F1=7, 0.2s"
+   "detail": "max local configs 2048, F0=0, F1=7, 0.3s"
   },
   "V8 L=4: F invariant under all 31 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
-   "detail": "max local configs 4096, F0=0, F1=7, 0.7s"
+   "detail": "max local configs 4096, F0=0, F1=7, 1.1s"
   },
   "V8 L=5: F invariant under all 49 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
-   "detail": "max local configs 16384, F0=0, F1=7, 2.4s"
+   "detail": "max local configs 16384, F0=0, F1=7, 2.5s"
   },
   "V8 L=6: F invariant under all 71 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
-   "detail": "max local configs 16384, F0=0, F1=7, 4.9s"
+   "detail": "max local configs 16384, F0=0, F1=7, 6.6s"
   },
   "V8 L=7: F invariant under all 97 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
-   "detail": "max local configs 16384, F0=0, F1=7, 8.0s"
+   "detail": "max local configs 16384, F0=0, F1=7, 9.4s"
   },
   "V8 L=8: F invariant under all 127 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
-   "detail": "max local configs 16384, F0=0, F1=7, 13.8s"
+   "detail": "max local configs 16384, F0=0, F1=7, 15.1s"
   },
   "V9 L=3: every X-type gadget (unpruned) implements the projective measurement of its Clifford stabilizer": {
    "status": "PASS",
@@ -351,11 +351,11 @@
   },
   "M7 d=3 seed=0: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=1, qubits=53"
+   "detail": "after=-1, qubits=53"
   },
   "M7 d=3 seed=1: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=-1, qubits=53"
+   "detail": "after=1, qubits=53"
   },
   "M7 d=3 seed=2: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
@@ -367,11 +367,11 @@
   },
   "M7 d=5 seed=0: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=-1, qubits=149"
+   "detail": "after=1, qubits=149"
   },
   "M7 d=5 seed=1: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=-1, qubits=149"
+   "detail": "after=1, qubits=149"
   },
   "M7 d=5 seed=2: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
@@ -387,7 +387,7 @@
   },
   "M7 d=7 seed=1: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=-1, qubits=293"
+   "detail": "after=1, qubits=293"
   },
   "M7 d=7 seed=2: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
@@ -411,7 +411,7 @@
   },
   "M9 d=5: all 11 multi-patch measurements P(x)Z_m are valid lattice surgeries (exact F2 criteria, merged-code distance >= d)": {
    "status": "PASS",
-   "detail": "merged (d_X, d_Z) = [(5, 5), (8, 5)]; 60s"
+   "detail": "merged (d_X, d_Z) = [(5, 5), (8, 5)]; 65s"
   },
   "M9 d=7: all 11 multi-patch measurements P(x)Z_m are valid lattice surgeries (exact F2 criteria)": {
    "status": "PASS",
@@ -579,7 +579,7 @@
   },
   "N3 L=2 parallel schedule, p=0.01: proxy = exact non-Clifford circuit (8 runs)": {
    "status": "PASS",
-   "detail": "928 measurements (122 random), <H> values [-1.0, 0.0], 15s"
+   "detail": "928 measurements (122 random), <H> values [-1.0, 0.0], 16s"
   },
   "N3 L=2 sequential schedule, p=0.01: proxy = exact non-Clifford circuit (4 runs)": {
    "status": "PASS",
