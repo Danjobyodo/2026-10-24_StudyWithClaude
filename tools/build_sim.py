@@ -9,7 +9,7 @@ cells = [md(r'''
 2. 比較相手（Litinski の蒸留）の誤り予算に使う回転表面符号の論理誤り率 $p_L(d,p)$ を、**同じ雑音モデル**で較正する。
 
 **出力**：`results/d4_noisy_mc.csv`（ショットの塊ごとの生データ）、`results/surface_code_plog.csv`。比較・費用計算は `noisy_cost_comparison.ipynb` が行う。
-`QUICK = True`（既定）は数分の動作確認で、結果は `*_quick.csv` に書かれ、リポジトリの本番結果を上書きしない。本番結果（リポジトリ同梱）は `QUICK = False`、4 コアで約 4 時間。
+`QUICK = True`（既定）は数分の動作確認で、結果は `*_quick.csv` に書かれ、リポジトリの本番結果を上書きしない。本番結果（リポジトリ同梱）は `QUICK = False`、4 コアで約 5 時間（診断用の点を含む）。
 
 **方法の要点**（詳細は `docs/methods.md`）
 
@@ -27,6 +27,7 @@ cells = [md(r'''
 ## 1. 設定
 * `SCENARIOS`：雑音モデル。A＝アイドル雑音あり（$p_{\rm idle}=p$、SD6 型の標準的な回路雑音）、B＝アイドル雑音なし。
 * `KAPPA`：S0, S1, S4 のラウンド数 $\lceil\kappa d\rceil$（[KZH] は $O(d)$ としか書いていない。既定 1、S1 については `KAPPA_SCAN` で感度を見る）。
+* `QUIET_POINTS`：**診断用**の追加の点。切り替えの時間窓（D4 相最後のラウンド、$U$ 直前の $Z$ ラウンド、$U$、switch-out、FSC に戻った最初のラウンド）だけ雑音を 0 にする（`quiet_window=True`）。本研究の復号器が 1 個の故障を訂正できない場所はこの窓に集中しており（`validation.ipynb` N5）、この窓の扱いを理想化したときの楽観的な限界を与える。物理的なモデルではない。
 * `TIME_CAP`（秒）と `MAX_FAIL`：1 点あたりの打ち切り条件（失敗 200 回で十分な精度）。
 * `WORKERS`：並列プロセス数（Colab は 2 程度）。
 '''),
@@ -47,6 +48,9 @@ SUFFIX = '_quick' if QUICK else ''
 MC_CSV, CAL_CSV = f'{RESULTS}/d4_noisy_mc{SUFFIX}.csv', f'{RESULTS}/surface_code_plog{SUFFIX}.csv'
 POINTS = [dict(scenario=s, d=d, p=p, p_idle=f * p, kappa=KAPPA) for s, f in SCENARIOS.items() for p in P_LIST for d in D_LIST]
 POINTS += [dict(scenario=s, d=d, p=p, p_idle=SCENARIOS[s] * p, kappa=(1.0, k, 1.0)) for d, p, s, k in KAPPA_SCAN]
+QUIET_POINTS = [dict(scenario=s, d=d, p=p, p_idle=f * p, kappa=KAPPA, quiet=True, max_fail=100, time_cap=TIME_CAP // 2)
+                for s, f in SCENARIOS.items() for p in ([1e-3] if QUICK else [1e-3, 5e-4, 3e-4]) for d in D_LIST]
+POINTS += QUIET_POINTS
 print(len(POINTS), 'points ->', MC_CSV)
 '''),
     md(r'''
@@ -77,15 +81,15 @@ import time, multiprocessing as mp_
 def run_point(pt, seed):
     d, p = pt['d'], pt['p']
     R_ = [max(1, int(np.ceil(k * d))) for k in pt['kappa']]
-    ex = D4Experiment(d, *R_, NoiseModel(p, p_idle=pt['p_idle']))
+    ex = D4Experiment(d, *R_, NoiseModel(p, p_idle=pt['p_idle']), quiet_window=pt.get('quiet', False))
     rng = np.random.default_rng(seed)
     chunk = 400 if d <= 5 else 100 if d == 7 else 40
     out, t_start, nf = [], time.time(), 0
-    while time.time() - t_start < TIME_CAP and nf < MAX_FAIL:
+    while time.time() - t_start < pt.get('time_cap', TIME_CAP) and nf < pt.get('max_fail', MAX_FAIL):
         t0 = time.time()
         inf, st = ex.run(chunk, rng)
         nf += int((inf > 0).sum())
-        out.append(dict(scenario=pt['scenario'], d=d, p=p, p_idle=pt['p_idle'], kappa0=pt['kappa'][0],
+        out.append(dict(scenario=pt['scenario'], window='quiet' if pt.get('quiet') else 'noisy', d=d, p=p, p_idle=pt['p_idle'], kappa0=pt['kappa'][0],
                         kappa_in=pt['kappa'][1], kappa_out=pt['kappa'][2], R0=R_[0], Rin=R_[1], Rout=R_[2],
                         shots=chunk, sum_infidelity=float(inf.sum()), n_fail=int((inf > 0).sum()),
                         n_half=int((inf == 0.5).sum()), mean_errors=float(np.mean([s['n_err'] for s in st])),
@@ -137,7 +141,7 @@ cal
 不忠実度の推定値 $\hat\varepsilon_K$ と標準誤差（ショットごとの値 0, 1/2, 1 の平均と標準誤差）。
 '''),
     code(r'''
-g = mc.groupby(['scenario', 'd', 'p', 'kappa_in']).agg(shots=('shots', 'sum'), s=('sum_infidelity', 'sum'),
+g = mc.groupby(['window', 'scenario', 'd', 'p', 'kappa_in']).agg(shots=('shots', 'sum'), s=('sum_infidelity', 'sum'),
                                                        n_fail=('n_fail', 'sum'), n_half=('n_half', 'sum')).reset_index()
 g['eps'] = g.s / g.shots
 n_one = g.n_fail - g.n_half                      # shots with infidelity 1 (the others have 1/2)

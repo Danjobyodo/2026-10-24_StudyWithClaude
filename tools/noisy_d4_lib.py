@@ -1246,7 +1246,8 @@ class D4Experiment:
     """Noisy KZH protocol + decoders.  run(shots) returns per-shot logical infidelity samples
     (0, 1/2 or 1; Takada Sec. VI D with the infidelity (1 - <H>)/2 of the output) and diagnostics."""
 
-    def __init__(self, L, R0, Rin, Rout, noise, delay=0, pre_u_age=0, n_pre_u=1, flux_informed=True):
+    def __init__(self, L, R0, Rin, Rout, noise, delay=0, pre_u_age=0, n_pre_u=1, flux_informed=True,
+                 quiet_window=False):
         self.pre_u_age = pre_u_age
         self.flux_informed = flux_informed
         self.circ = D4SwitchingCircuit(L, R0, Rin, Rout, n_pre_u=n_pre_u)
@@ -1254,6 +1255,18 @@ class D4Experiment:
         self.noise = noise
         self.flux = FluxDecoder(self.comp, delay=delay)
         self.charges = [ChargeDecoder(self.comp, aligned=a) for a in (True, False)]
+        # diagnostic (not a physical model): no noise in the switching window = the last D4 round, the Z
+        # rounds before U, U, the switch-out and the first FSC round, where the single faults that our
+        # decoders fail to correct are located (validation N5).  Gives an optimistic bound.  The decoders keep
+        # the priors of the full noise model (they are built before the window is silenced).
+        self.quiet_window = quiet_window
+        if quiet_window:
+            win = {('S1', Rin, 'z'), ('S1', Rin, 'x'), ('U',), ('SO',), ('S4', 1)}
+            win |= {('S1', r, 'z') for r in range(Rin + 1, Rin + 1 + n_pre_u)}
+            for blk in self.comp.blocks:
+                if blk['name'] in win:
+                    a, b = blk['moms'][0].loc_slice[0], blk['moms'][-1].loc_slice[1]
+                    self.comp.loc_p[a:b] = 0.0
         self.gset = set(self.circ.data_g)
 
     def shot(self, rng, decode=True, forced=None):
@@ -1312,7 +1325,7 @@ class D4Experiment:
                     for q in phys:
                         fl.register_correction(q, 'FSC')
                     stats['n_corr'] += len(phys)
-                self._switch_out_fix(sh, readout, a_dec, rng, noisy=forced is None)
+                self._switch_out_fix(sh, readout, a_dec, rng, noisy=forced is None and not self.quiet_window)
         # Pauli frame of the S^g eigenvalues (last S1 round), then the logical Clifford stabilizer
         for v, m in enumerate(m_g_last):
             if m:

@@ -76,60 +76,74 @@ pd.DataFrame(rows).round(5)
     md(r'''
 ## 第II部 Kobayashi 方式
 ### II-1. モンテカルロの結果
-ショットごとの不忠実度（0, 1/2, 1）の平均 $\hat\varepsilon_K$ と標準誤差。$\kappa_{\rm in}\neq1$ の行は switch-in のラウンド数の感度。
+ショットごとの不忠実度（0, 1/2, 1）の平均 $\hat\varepsilon_K$ と標準誤差。`window = noisy` が本来のシミュレーション（全ての位置に雑音）、`window = quiet` は**診断用**で、切り替えの時間窓（D4 相最後のラウンド、$U$ 直前の $Z$ ラウンド、$U$、switch-out、FSC に戻った最初のラウンド）だけ雑音を 0 にしたもの。本研究の復号器が 1 個の故障を訂正できない場所はこの窓に集中している（`validation.ipynb` N5）ので、quiet は「窓の誤りを理想的に扱えた場合」の楽観的な限界を与える（物理的なモデルではない）。$\kappa_{\rm in}\neq1$ の行は switch-in のラウンド数の感度。
 '''),
     code(r'''
-g = mc.groupby(['scenario', 'd', 'p', 'kappa_in']).agg(shots=('shots', 'sum'), s=('sum_infidelity', 'sum'),
-                                                       n_fail=('n_fail', 'sum'), n_half=('n_half', 'sum'),
-                                                       errors_per_shot=('mean_errors', 'mean')).reset_index()
+g = mc.groupby(['window', 'scenario', 'd', 'p', 'kappa_in']).agg(
+    shots=('shots', 'sum'), s=('sum_infidelity', 'sum'), n_fail=('n_fail', 'sum'), n_half=('n_half', 'sum'),
+    errors_per_shot=('mean_errors', 'mean')).reset_index()
 g['eps'] = g.s / g.shots
 n_one = g.n_fail - g.n_half
 g['stderr'] = np.sqrt(np.maximum((n_one + 0.25 * g.n_half) / g.shots - g.eps ** 2, 0) / g.shots)
-main = g[g.kappa_in == 1.0].copy()
-g.round({'eps': 6, 'stderr': 6, 'errors_per_shot': 1})
+g['eps_over_p'] = g.eps / g.p
+main = g[(g.kappa_in == 1.0) & (g.window == 'noisy')].copy()
+quiet = g[(g.kappa_in == 1.0) & (g.window == 'quiet')].copy()
+g.round({'eps': 6, 'stderr': 6, 'errors_per_shot': 1, 'eps_over_p': 2})
 '''),
     md(r'''
 ### II-2. $d$ と $p$ への依存の当てはめ（外挿の根拠）
-閾値以下では $\varepsilon_K \approx A\,\Lambda(p)^{-d}$、$\Lambda$ は $p$ のべきで決まる、という標準的な形を仮定し、
+閾値以下の標準的な形 $\varepsilon_K \approx A\,\Lambda(p)^{-d}$（$\Lambda$ は $p$ のべき）を仮定し、
 $$\log\varepsilon_K = a + c\,d + (b + e\,d)\log p$$
-を、失敗が 10 回以上ある点に（標準誤差で重み付けして）当てはめる。$d$ 方向の抑制が消える $p$（$c + e\log p = 0$）を擬閾値 $p^*$ とする。**$d\le 9$ のデータからの外挿であり、確定値ではない**。
+を重み付き最小二乗で当てはめる（noisy は失敗 10 回以上、quiet は 5 回以上の点）。$d$ 方向の抑制率は $-(c+e\log p)$。**$d\le 9$ のデータからの外挿であり、確定値ではない**。
+noisy では $\varepsilon_K$ が $d$ でほとんど下がらず、$\varepsilon_K\approx(3\text{–}8)\,p$ にとどまる：切り替えの窓で復号器が 1 個の故障を訂正できない場所が一定数あり、その寄与（$\propto p$）が支配する（`validation.ipynb` N5）。quiet では $d$ とともに急速に下がる。
 '''),
     code(r'''
 FIT = {}
 rows = []
-for s in SCENARIOS:
-    m_ = main[(main.scenario == s) & (main.n_fail >= 10) & (main.eps > 0)]
-    X_ = np.stack([np.ones(len(m_)), m_.d, np.log(m_.p), m_.d * np.log(m_.p)], axis=1)
-    y_ = np.log(m_.eps.values)
-    w_ = (m_.eps / np.maximum(m_.stderr, 1e-12)).values           # 1/sigma of log(eps)
-    coef, *_ = np.linalg.lstsq(X_ * w_[:, None], y_ * w_, rcond=None)
-    FIT[s] = coef
-    a, c, b, e = coef
-    pstar = float(np.exp(-c / e)) if e != 0 else float('nan')
-    resid = (X_ @ coef - y_)
-    rows.append(dict(scenario=s, a=a, c=c, b=b, e=e, pseudo_threshold=pstar, points=len(m_),
-                     rms_log_residual=float(np.sqrt(np.mean(resid ** 2)))))
-def eps_K_model(s, d, p):
-    a, c, b, e = FIT[s]
-    return float(np.exp(a + c * d + (b + e * d) * np.log(p)))
+for w_, data, nmin in (('noisy', main, 10), ('quiet', quiet, 5)):
+    for s in SCENARIOS:
+        m_ = data[(data.scenario == s) & (data.n_fail >= nmin) & (data.eps > 0)]
+        if len(m_) < 4:
+            continue
+        X_ = np.stack([np.ones(len(m_)), m_.d, np.log(m_.p), m_.d * np.log(m_.p)], axis=1)
+        y_ = np.log(m_.eps.values)
+        wt = (m_.eps / np.maximum(m_.stderr, 1e-12)).values           # 1/sigma of log(eps)
+        coef, *_ = np.linalg.lstsq(X_ * wt[:, None], y_ * wt, rcond=None)
+        FIT[(w_, s)] = coef
+        a, c, b, e = coef
+        rows.append(dict(window=w_, scenario=s, a=a, c=c, b=b, e=e, points=len(m_),
+                         suppression_per_2d_at_p1e4=float(np.exp(-2 * (c + e * np.log(1e-4)))),
+                         suppression_per_2d_at_p1e3=float(np.exp(-2 * (c + e * np.log(1e-3)))),
+                         rms_log_residual=float(np.sqrt(np.mean((X_ @ coef - y_) ** 2)))))
+def eps_K_model(s, d, p, w='noisy'):
+    a, c, b, e = FIT[(w, s)]
+    return float(min(np.exp(a + c * d + (b + e * d) * np.log(p)), 1.0))
 pd.DataFrame(rows).round(4)
 '''),
     code(r'''
-fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), sharey=True)
+fig, axes = plt.subplots(2, 2, figsize=(11, 8), sharex=True, sharey=True)
 mk = {3: 'o', 5: 's', 7: '^', 9: 'D'}
 cols = {3: '#8fb8ea', 5: '#5a95dc', 7: '#2a78d6', 9: '#174a8a'}
-for ax, s in zip(axes, SCENARIOS):
-    for d in sorted(main.d.unique()):
-        m_ = main[(main.scenario == s) & (main.d == d)].sort_values('p')
-        ax.errorbar(m_.p, m_.eps, yerr=m_.stderr, fmt=mk.get(d, 'o'), color=cols.get(d, 'k'), label=f'd = {d} (simulated)', capsize=2)
-        pp = np.logspace(-4.2, -2.9, 40)
-        ax.plot(pp, [eps_K_model(s, d, x) for x in pp], '-', color=cols.get(d, 'k'), lw=1, alpha=0.7)
-    pp = np.logspace(-4.2, -2.9, 40)
-    ax.plot(pp, pp, ':', color='#52514e', lw=1, label='raw injected state (error ~ p)')
-    ax.set_xscale('log'); ax.set_yscale('log'); ax.set_xlabel('physical error rate p')
-    ax.set_title(f'Kobayashi D4 switching, scenario {s}')
-axes[0].set_ylabel('output infidelity  ε_K(d, p)')
-axes[1].legend(fontsize=8)
+pp = np.logspace(-4.2, -2.9, 40)
+for i, (w_, data) in enumerate((('noisy', main), ('quiet', quiet))):
+    for j, s in enumerate(SCENARIOS):
+        ax = axes[i, j]
+        for d in sorted(data.d.unique()):
+            m_ = data[(data.scenario == s) & (data.d == d)].sort_values('p')
+            pos = m_[m_.n_fail > 0]; zero = m_[m_.n_fail == 0]
+            ax.errorbar(pos.p, pos.eps, yerr=pos.stderr, fmt=mk.get(d, 'o'), color=cols.get(d, 'k'), capsize=2,
+                        label=f'd = {d}')
+            if len(zero):                      # no failure: 95% upper limit 3/shots
+                ax.plot(zero.p, 3 / zero.shots, 'v', color=cols.get(d, 'k'), mfc='none')
+            if (w_, s) in FIT:
+                ax.plot(pp, [eps_K_model(s, d, x, w_) for x in pp], '-', color=cols.get(d, 'k'), lw=1, alpha=0.7)
+        ax.plot(pp, pp, ':', color='#52514e', lw=1, label='error = p (raw injected state)')
+        ax.set_xscale('log'); ax.set_yscale('log')
+        ax.set_title(f'scenario {s}, ' + ('full simulation' if w_ == 'noisy' else 'switching window noise-free (diagnostic)'),
+                     fontsize=9)
+        if i == 1: ax.set_xlabel('physical error rate p')
+        if j == 0: ax.set_ylabel('output infidelity  ε_K(d, p)')
+axes[0, 1].legend(fontsize=8)
 plt.tight_layout(); plt.savefig(f'{FIGURES}/d4_logical_error.png', dpi=150); plt.show()
 '''),
     md(r'''
@@ -199,7 +213,7 @@ print('evaluated', sum(len(v) for v in LIT.values()), 'factory configurations in
     md(r'''
 ## 第IV部 比較
 ### IV-1. 出力誤り vs 時空間体積
-各方式で、ある体積で到達できる最小の出力誤り（パレート前線）。Kobayashi 方式は $d=3,\dots,9$ がシミュレーション（実線・マーカー）、それより大きい $d$ は II-2 の当てはめによる外挿（破線）。
+各方式で、ある体積で到達できる最小の出力誤り。Litinski 方式は候補の中のパレート前線。Kobayashi 方式は $d=3,\dots,9$ がシミュレーション（マーカー）、線は II-2 の当てはめ（$d>9$ は外挿）。実線＝本来のシミュレーション（本研究の復号器）、点線＝切り替えの窓を雑音なしにした診断（楽観的な限界）。実際の方式の性能は、最適な復号器を使えば両者の間にあると考えられる。
 '''),
     code(r'''
 def pareto(df):
@@ -211,17 +225,20 @@ def pareto(df):
     return pd.DataFrame(rows)
 show_p = [1e-4, 3e-4, 1e-3]
 fig, axes = plt.subplots(2, len(show_p), figsize=(4.2 * len(show_p), 7.6), sharex=True, sharey=True)
+ds = np.arange(3, 61, 2)
+vk = np.array([kobayashi_cost(d)['volume'] for d in ds])
 for i, s in enumerate(SCENARIOS):
     for j, p in enumerate(show_p):
         ax = axes[i, j]
         fr = pareto(LIT[(s, p)])
         ax.step(fr.volume_steps, fr.eps, where='post', color=C_LIT, label='Litinski (best of GoSC / 2019 factories)')
-        ds = np.arange(3, 61, 2)
-        ek = np.array([eps_K_model(s, d, p) for d in ds]); vk = np.array([kobayashi_cost(d)['volume'] for d in ds])
-        ax.plot(vk, np.minimum(ek, 1), '--', color=C_KOB, lw=1.2, label='Kobayashi (fit / extrapolation)')
+        ax.plot(vk, [eps_K_model(s, d, p) for d in ds], '-', color=C_KOB, lw=1.2, label='Kobayashi (fit; d > 9 extrapolated)')
+        if ('quiet', s) in FIT:
+            ax.plot(vk, [eps_K_model(s, d, p, 'quiet') for d in ds], ':', color=C_KOB, lw=1.5,
+                    label='Kobayashi, switching window noise-free (optimistic)')
         sim = main[(main.scenario == s) & (main.p == p)]
         ax.errorbar([kobayashi_cost(d)['volume'] for d in sim.d], sim.eps, yerr=sim.stderr, fmt='o', color=C_KOB,
-                    label='Kobayashi (simulated d = 3..9)')
+                    label='Kobayashi (simulated)')
         ax.axhline(p, color='#52514e', ls=':', lw=1)
         ax.set_xscale('log'); ax.set_yscale('log'); ax.set_ylim(1e-14, 1)
         ax.set_title(f'scenario {s},  p = {p:g}')
@@ -232,9 +249,13 @@ plt.tight_layout(); plt.savefig(f'{FIGURES}/cost_comparison.png', dpi=150); plt.
 '''),
     md(r'''
 ### IV-2. 要求誤りごとの最小費用
-`Kobayashi d` が 9 を超える場合は外挿、`—` は当てはめの範囲で到達できない（擬閾値より上、または $d\le 61$ で届かない）ことを示す。
+Litinski 方式は要求を満たす候補のうち体積最小のもの。Kobayashi 方式は要求を満たす最小の $d$（$d\le61$）とその体積：`kobayashi_*` は本来のシミュレーションの当てはめ、`kobayashi_*_opt` は切り替えの窓を雑音なしにした診断（楽観的）。`—` は $d\le61$ で届かないこと、`extrapolated` は $d>9$（外挿）を示す。
 '''),
     code(r'''
+def kob_min(s, p, t, w_):
+    if (w_, s) not in FIT:
+        return None
+    return next((d for d in range(3, 62, 2) if eps_K_model(s, d, p, w_) <= t), None)
 rows = []
 for s in SCENARIOS:
     for p in P_EVAL:
@@ -242,41 +263,43 @@ for s in SCENARIOS:
         for t in TARGETS:
             ok = df[df.eps <= t]
             lit = ok.loc[ok.volume_steps.idxmin()] if len(ok) else None
-            dk = next((d for d in range(3, 62, 2) if eps_K_model(s, d, p) <= t), None)
-            kc = kobayashi_cost(dk) if dk else None
-            rows.append(dict(scenario=s, p=p, target=t,
-                             litinski_protocol=lit.protocol if lit is not None else '—',
-                             litinski_eps=lit.eps if lit is not None else np.nan,
-                             litinski_qubits=lit.qubits if lit is not None else np.nan,
-                             litinski_time_steps=lit.time_steps if lit is not None else np.nan,
-                             litinski_volume=lit.volume_steps if lit is not None else np.nan,
-                             kobayashi_d=dk if dk else '—',
-                             kobayashi_extrapolated=(dk is not None and dk > 9),
-                             kobayashi_eps_model=eps_K_model(s, dk, p) if dk else np.nan,
-                             kobayashi_qubits=kc['qubits'] if kc else np.nan,
-                             kobayashi_time_steps=kc['time_steps'] if kc else np.nan,
-                             kobayashi_volume=kc['volume'] if kc else np.nan))
+            r = dict(scenario=s, p=p, target=t,
+                     litinski_protocol=lit.protocol if lit is not None else '—',
+                     litinski_eps=lit.eps if lit is not None else np.nan,
+                     litinski_qubits=lit.qubits if lit is not None else np.nan,
+                     litinski_time_steps=lit.time_steps if lit is not None else np.nan,
+                     litinski_volume=lit.volume_steps if lit is not None else np.nan)
+            for w_, suf in (('noisy', ''), ('quiet', '_opt')):
+                dk = kob_min(s, p, t, w_)
+                kc = kobayashi_cost(dk) if dk else None
+                r.update({f'kobayashi_d{suf}': dk if dk else '—',
+                          f'kobayashi_extrapolated{suf}': bool(dk is not None and dk > 9),
+                          f'kobayashi_qubits{suf}': kc['qubits'] if kc else np.nan,
+                          f'kobayashi_time_steps{suf}': kc['time_steps'] if kc else np.nan,
+                          f'kobayashi_volume{suf}': kc['volume'] if kc else np.nan})
+            rows.append(r)
 CMP = pd.DataFrame(rows)
 CMP['volume_ratio_K_over_L'] = CMP.kobayashi_volume / CMP.litinski_volume
-CMP.to_csv(f'{RESULTS}/cost_comparison.csv', index=False)
-pd.set_option('display.max_colwidth', 60)
-CMP[['scenario', 'p', 'target', 'litinski_protocol', 'litinski_volume', 'kobayashi_d', 'kobayashi_extrapolated',
-     'kobayashi_volume', 'volume_ratio_K_over_L']]
+CMP['volume_ratio_K_opt_over_L'] = CMP.kobayashi_volume_opt / CMP.litinski_volume
+pd.set_option('display.max_colwidth', 50)
+CMP[['scenario', 'p', 'target', 'litinski_protocol', 'litinski_volume', 'kobayashi_d', 'kobayashi_volume',
+     'volume_ratio_K_over_L', 'kobayashi_d_opt', 'kobayashi_extrapolated_opt', 'kobayashi_volume_opt',
+     'volume_ratio_K_opt_over_L']]
 '''),
     md(r'''
 ### IV-3. Kobayashi 方式が同じ体積に収まるために必要な改善
-要求誤りごとに、Litinski 方式の最小体積以下に収まる Kobayashi 方式の最大の $d$（$d_{\max}$）を求め、そこでの $\varepsilon_K(d_{\max},p)$（当てはめ）が要求誤りの何倍か（`required_improvement`）を示す。復号器・スケジュールの改良でこの倍率だけ $\varepsilon_K$ が下がれば、体積で並ぶ（FSC → パッチ変換の費用は含めていない）。
+要求誤りごとに、Litinski 方式の最小体積以下に収まる Kobayashi 方式の最大の $d$（$d_{\max}$）を求め、そこでの $\varepsilon_K(d_{\max},p)$（本来のシミュレーションの当てはめ）が要求誤りの何倍か（`required_improvement`）を示す。復号器・スケジュールの改良でこの倍率だけ $\varepsilon_K$ が下がれば、体積で並ぶ（FSC → パッチ変換の費用は含めていない）。
 '''),
     code(r'''
 rows = []
 for _, r in CMP.iterrows():
     if not np.isfinite(r.litinski_volume):
         continue
-    ds = [d for d in range(3, 62, 2) if kobayashi_cost(d)['volume'] <= r.litinski_volume]
-    dmax = max(ds) if ds else None
+    ds_ = [d for d in range(3, 62, 2) if kobayashi_cost(d)['volume'] <= r.litinski_volume]
+    dmax = max(ds_) if ds_ else None
     ek = eps_K_model(r.scenario, dmax, r.p) if dmax else np.nan
-    rows.append(dict(scenario=r.scenario, p=r.p, target=r.target, litinski_volume=r.litinski_volume, kobayashi_d_max=dmax,
-                     eps_K_at_d_max=ek, required_improvement=ek / r.target if dmax else np.nan))
+    rows.append(dict(scenario=r.scenario, p=r.p, target=r.target, litinski_volume=r.litinski_volume,
+                     kobayashi_d_max=dmax, eps_K_at_d_max=ek, required_improvement=ek / r.target if dmax else np.nan))
 IMP = pd.DataFrame(rows)
 CMP = CMP.merge(IMP[['scenario', 'p', 'target', 'kobayashi_d_max', 'required_improvement']], how='left',
                 on=['scenario', 'p', 'target'])
