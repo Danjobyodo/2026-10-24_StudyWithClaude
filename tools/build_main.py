@@ -14,7 +14,13 @@ EMBED_MC = _embed('results/d4_noisy_mc.csv')
 EMBED_CAL = _embed('results/surface_code_plog.csv')
 CONCLUSION = r'''
 ## 結論
-@@CONCLUSION@@
+本研究の実装（回路・スケジュール・復号器はいずれも本研究の構成、§II）で得た結論。数値は `results/cost_comparison.csv`。
+
+1. **本来のシミュレーションでは、Kobayashi 方式の出力誤りは $d$ を大きくしても下がらない。** $d\ge5$ で $\varepsilon_K\approx(3\text{–}8)\,p$（シナリオ B）、シナリオ A ではさらに大きい（$p=10^{-3}$ で約 20%）。これは生の注入状態（誤り $\sim p$）より悪く、評価した全ての $p$ で要求誤り $10^{-4}$ にも届かない。原因は、切り替えの時間窓（D4 相最後のラウンド〜switch-out〜FSC の最初のラウンド）で本研究の復号器が 1 個の故障を訂正できない場所が一定数あること（`validation.ipynb` N5）。窓の外の雑音だけなら $\varepsilon_K$ は $d$ とともに急速に下がる（シナリオ B、$p=10^{-4}$ で距離 2 ごとに約 24 倍）。
+2. **窓の誤りを完全に扱えたとする楽観的な限界でも、要求誤り $10^{-6}$ 以下では Litinski 方式の方が体積が小さい**：Kobayashi / Litinski の体積比は、アイドル雑音あり（A）で $p=10^{-4}$ でも 5.6〜7.1 倍、$p=5\times10^{-4}$ で 27〜59 倍、$p=10^{-3}$ では Kobayashi は閾値付近で届かない。アイドル雑音なし（B）でも 1.0〜58 倍。Kobayashi が並ぶか下回るのは、B で要求 $10^{-4}$・$p\le2\times10^{-4}$（0.36〜0.52 倍）と、B・$p=10^{-4}$・要求 $10^{-6}$（1.0 倍）だけ。
+3. Kobayashi 方式の費用が大きい主な理由：(i) D4 相の 1 ラウンドが長く（CCZ を含む X 型安定化子の測定 28 ステップ＋$Z$ 検査 6 ステップ）、雑音の位置が多い（同じ $d$ の表面符号パッチの数倍の量子ビット × 数倍のステップ）、(ii) そのため実効的な閾値が低い（シナリオ A では $p=10^{-3}$ で $d$ による改善が消える）、(iii) 出力 1 個のために $d\times d$ 格子全体を $O(d)$ ラウンド使う（体積 $\approx 632d^3$）のに対し、Litinski 方式は蒸留により小さい距離の部品で高い精度に届く。
+4. **結論を変えうる要因**（いずれも本研究では未解決）：切り替えの窓を正しく扱う復号器（[Dav] の JIT decoder；これが無いと 1 の床が残る）、最適化した測定スケジュール（FSC 14 → 6 ステップ、D4 ラウンドの短縮）、CCZ の実際の誤り率（$p$ より大きければ Kobayashi にさらに不利）、FSC → 通常パッチへの変換（未計上 → Kobayashi に有利な側の省略）。switch-in のラウンド数 $\kappa_{\rm in}$ は、窓の床が支配する現状では 0.6 以上でほぼ影響しない（II-1 の $\kappa_{\rm in}$ の行）。
+5. 2 の比較は楽観的な限界でも Litinski 方式が有利な領域が大半なので、「実用的な要求精度（$\le10^{-6}$）では 15-to-1 蒸留の方が時空間体積が小さい」という結論は、窓の扱いの改良に対しては頑健と考えられる。ただし楽観的な限界の $d>9$ への外挿（bulk の当てはめ）は少数の点に基づき不確かさが大きい。
 '''
 
 cells = [md(r'''
@@ -91,33 +97,44 @@ quiet = g[(g.kappa_in == 1.0) & (g.window == 'quiet')].copy()
 g.round({'eps': 6, 'stderr': 6, 'errors_per_shot': 1, 'eps_over_p': 2})
 '''),
     md(r'''
-### II-2. $d$ と $p$ への依存の当てはめ（外挿の根拠）
-閾値以下の標準的な形 $\varepsilon_K \approx A\,\Lambda(p)^{-d}$（$\Lambda$ は $p$ のべき）を仮定し、
-$$\log\varepsilon_K = a + c\,d + (b + e\,d)\log p$$
-を重み付き最小二乗で当てはめる（noisy は失敗 10 回以上、quiet は 5 回以上の点）。$d$ 方向の抑制率は $-(c+e\log p)$。**$d\le 9$ のデータからの外挿であり、確定値ではない**。
-noisy では $\varepsilon_K$ が $d$ でほとんど下がらず、$\varepsilon_K\approx(3\text{–}8)\,p$ にとどまる：切り替えの窓で復号器が 1 個の故障を訂正できない場所が一定数あり、その寄与（$\propto p$）が支配する（`validation.ipynb` N5）。quiet では $d$ とともに急速に下がる。
+### II-2. $d$ と $p$ への依存のモデル（外挿の根拠）
+データの構造（II-1）：本来のシミュレーション（noisy）では、$d\ge5$ で $\varepsilon_K$ が $d$ によらずほぼ $(3\text{–}8)\,p$ にとどまる。切り替えの窓を雑音なしにした診断（quiet）では $d$ とともに急速に下がる。つまり $\varepsilon_K$ は「窓の外（bulk）の寄与」＋「切り替えの窓の寄与」で、後者は本研究の復号器が 1 個の故障を訂正できないことによる $d$ によらない床（$\propto p$）である（`validation.ipynb` N5）。そこで次のモデルを使う。
+* bulk：quiet のデータ（失敗 5 回以上の点）に閾値以下の標準形 $\log\varepsilon_{\rm bulk} = a + c\,d + (b + e\,d)\log p$ を重み付き最小二乗で当てはめる（$d$ 方向の抑制率 $e^{-2(c+e\log p)}$ / 2 距離）。
+* 窓の床：noisy のデータ（$d\ge5$、失敗 10 回以上）から bulk の寄与を引いた残りに $W(p)=w\,p^{\gamma}$（$d$ によらない）を当てはめる。
+* `noisy`（本来の方式の性能、本研究の復号器）：$\varepsilon_K=\varepsilon_{\rm bulk}+W(p)$。`quiet`（楽観的な限界：窓の誤りを完全に扱えた場合）：$\varepsilon_K=\varepsilon_{\rm bulk}$。
+**$d\le 9$ のデータからの外挿であり、確定値ではない**。特に bulk の当てはめは失敗の多い点が少なく（$d\ge7$ はほとんど失敗しない）、不確かさが大きい。
 '''),
     code(r'''
-FIT = {}
+FIT, WIN = {}, {}
 rows = []
-for w_, data, nmin in (('noisy', main, 10), ('quiet', quiet, 5)):
-    for s in SCENARIOS:
-        m_ = data[(data.scenario == s) & (data.n_fail >= nmin) & (data.eps > 0)]
-        if len(m_) < 4:
-            continue
-        X_ = np.stack([np.ones(len(m_)), m_.d, np.log(m_.p), m_.d * np.log(m_.p)], axis=1)
-        y_ = np.log(m_.eps.values)
-        wt = (m_.eps / np.maximum(m_.stderr, 1e-12)).values           # 1/sigma of log(eps)
-        coef, *_ = np.linalg.lstsq(X_ * wt[:, None], y_ * wt, rcond=None)
-        FIT[(w_, s)] = coef
-        a, c, b, e = coef
-        rows.append(dict(window=w_, scenario=s, a=a, c=c, b=b, e=e, points=len(m_),
-                         suppression_per_2d_at_p1e4=float(np.exp(-2 * (c + e * np.log(1e-4)))),
-                         suppression_per_2d_at_p1e3=float(np.exp(-2 * (c + e * np.log(1e-3)))),
-                         rms_log_residual=float(np.sqrt(np.mean((X_ @ coef - y_) ** 2)))))
+def _wls(X_, y_, wt):
+    coef, *_ = np.linalg.lstsq(X_ * wt[:, None], y_ * wt, rcond=None)
+    return coef
+def eps_bulk(s, d, p):
+    a, c, b, e = FIT[s]
+    return float(np.exp(a + c * d + (b + e * d) * np.log(p)))
 def eps_K_model(s, d, p, w='noisy'):
-    a, c, b, e = FIT[(w, s)]
-    return float(min(np.exp(a + c * d + (b + e * d) * np.log(p)), 1.0))
+    v = eps_bulk(s, d, p) + (WIN[s][0] * p ** WIN[s][1] if w == 'noisy' else 0.0)
+    return float(min(v, 1.0))
+for s in SCENARIOS:
+    q_ = quiet[(quiet.scenario == s) & (quiet.n_fail >= 5)]
+    X_ = np.stack([np.ones(len(q_)), q_.d, np.log(q_.p), q_.d * np.log(q_.p)], axis=1)
+    FIT[s] = _wls(X_, np.log(q_.eps.values), (q_.eps / q_.stderr).values)
+    m_ = main[(main.scenario == s) & (main.d >= 5) & (main.n_fail >= 10)].copy()
+    m_['resid'] = m_.eps - [eps_bulk(s, d, p) for d, p in zip(m_.d, m_.p)]
+    m_ = m_[m_.resid > 0]
+    cw = _wls(np.stack([np.ones(len(m_)), np.log(m_.p)], axis=1), np.log(m_.resid.values), (m_.resid / m_.stderr).values)
+    WIN[s] = (float(np.exp(cw[0])), float(cw[1]))
+    a, c, b, e = FIT[s]
+    allm = main[(main.scenario == s) & (main.n_fail >= 10)]
+    res = np.log(allm.eps.values) - np.log([eps_K_model(s, d, p) for d, p in zip(allm.d, allm.p)])
+    rows.append(dict(scenario=s, bulk_points=len(q_), a=a, c=c, b=b, e=e,
+                     bulk_suppression_per_2d_p1e4=float(np.exp(-2 * (c + e * np.log(1e-4)))),
+                     bulk_suppression_per_2d_p1e3=float(np.exp(-2 * (c + e * np.log(1e-3)))),
+                     window_points=len(m_), W_w=WIN[s][0], W_gamma=WIN[s][1],
+                     W_over_p_at_1e4=WIN[s][0] * 1e-4 ** (WIN[s][1] - 1),
+                     W_over_p_at_1e3=WIN[s][0] * 1e-3 ** (WIN[s][1] - 1),
+                     rms_log_residual_noisy=float(np.sqrt(np.mean(res ** 2)))))
 pd.DataFrame(rows).round(4)
 '''),
     code(r'''
@@ -135,8 +152,7 @@ for i, (w_, data) in enumerate((('noisy', main), ('quiet', quiet))):
                         label=f'd = {d}')
             if len(zero):                      # no failure: 95% upper limit 3/shots
                 ax.plot(zero.p, 3 / zero.shots, 'v', color=cols.get(d, 'k'), mfc='none')
-            if (w_, s) in FIT:
-                ax.plot(pp, [eps_K_model(s, d, x, w_) for x in pp], '-', color=cols.get(d, 'k'), lw=1, alpha=0.7)
+            ax.plot(pp, [eps_K_model(s, d, x, w_) for x in pp], '-', color=cols.get(d, 'k'), lw=1, alpha=0.7)
         ax.plot(pp, pp, ':', color='#52514e', lw=1, label='error = p (raw injected state)')
         ax.set_xscale('log'); ax.set_yscale('log')
         ax.set_title(f'scenario {s}, ' + ('full simulation' if w_ == 'noisy' else 'switching window noise-free (diagnostic)'),
@@ -233,9 +249,8 @@ for i, s in enumerate(SCENARIOS):
         fr = pareto(LIT[(s, p)])
         ax.step(fr.volume_steps, fr.eps, where='post', color=C_LIT, label='Litinski (best of GoSC / 2019 factories)')
         ax.plot(vk, [eps_K_model(s, d, p) for d in ds], '-', color=C_KOB, lw=1.2, label='Kobayashi (fit; d > 9 extrapolated)')
-        if ('quiet', s) in FIT:
-            ax.plot(vk, [eps_K_model(s, d, p, 'quiet') for d in ds], ':', color=C_KOB, lw=1.5,
-                    label='Kobayashi, switching window noise-free (optimistic)')
+        ax.plot(vk, [eps_K_model(s, d, p, 'quiet') for d in ds], ':', color=C_KOB, lw=1.5,
+                label='Kobayashi, switching window noise-free (optimistic)')
         sim = main[(main.scenario == s) & (main.p == p)]
         ax.errorbar([kobayashi_cost(d)['volume'] for d in sim.d], sim.eps, yerr=sim.stderr, fmt='o', color=C_KOB,
                     label='Kobayashi (simulated)')
@@ -253,8 +268,6 @@ Litinski 方式は要求を満たす候補のうち体積最小のもの。Kobay
 '''),
     code(r'''
 def kob_min(s, p, t, w_):
-    if (w_, s) not in FIT:
-        return None
     return next((d for d in range(3, 62, 2) if eps_K_model(s, d, p, w_) <= t), None)
 rows = []
 for s in SCENARIOS:
