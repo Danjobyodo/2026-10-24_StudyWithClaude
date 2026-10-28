@@ -20,12 +20,13 @@ print('cwd =', os.getcwd(), '| Colab =', IN_COLAB)'''
 
 INSTALL = r'''# ==== 外部ライブラリ（Colab に無いものだけをインストール）====
 import importlib.util
-for _mod, _pkg in [('stim', 'stim'), ('scipy', 'scipy'), ('sympy', 'sympy'), ('pandas', 'pandas'),
-                   ('matplotlib', 'matplotlib')]:
+for _mod, _pkg in [('stim', 'stim'), ('pymatching', 'pymatching'), ('mpmath', 'mpmath'), ('scipy', 'scipy'),
+                   ('sympy', 'sympy'), ('pandas', 'pandas'), ('matplotlib', 'matplotlib')]:
     if importlib.util.find_spec(_mod) is None:
         subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', _pkg], check=True)
-import numpy as np, pandas as pd, scipy
-print('numpy', np.__version__, '| scipy', scipy.__version__, '| pandas', pd.__version__)'''
+import numpy as np, pandas as pd, scipy, stim, pymatching, mpmath
+print('numpy', np.__version__, '| scipy', scipy.__version__, '| stim', stim.__version__,
+      '| pymatching', pymatching.__version__, '| mpmath', mpmath.__version__)'''
 
 PLOTSTYLE = r'''# ==== 図のスタイル（明るい背景・細い線・識別は色＋線種＋マーカー）====
 import matplotlib
@@ -76,6 +77,8 @@ LIB_TITLES = {
     'common_lib.py': '共通ライブラリ（F2 線形代数・ゲート／ガジェット・スケジューラ・Clifford+T 分解・計数ルール R1–R3）',
     'd4_lib.py': 'D4 ライブラリ（境界付き D4 符号・transversal $U$・code switching・疎状態シミュレータ・資源モデル）',
     'msd_lib.py': '15-to-1 ライブラリ（行列・状態ベクトル回路・Fig. 17c 配置・多パッチ格子手術の明示的構成・資源モデル）',
+    'noisy_d4_lib.py': '雑音付き D4 code switching ライブラリ（回路・雑音モデル・Takada らの Pauli proxy 法による非 Clifford シミュレーション・復号器）',
+    'msd_noisy_lib.py': '雑音付き 15-to-1 ライブラリ（Litinski の誤り予算・密度行列計算・GoSC 配置・表面符号の p_L 較正）',
 }
 
 

@@ -1,8 +1,0 @@
-d,rotation_qubits_min,rotation_qubits_max,idle_qubits,rotation_round_lb,rotation_round_ub,CNOT_per_round_max,tile_model_rotation_qubits,isolated_patch_round_lb,isolated_patch_round_ub
-3,192,192,155,6.0,12,319,198,6.0,12
-5,544,544,443,6.0,12,971,550,6.0,12
-7,1072,1072,875,6.0,12,1975,1078,6.0,12
-9,1776,1776,1451,6.0,12,3331,1782,6.0,12
-11,2656,2656,2171,6.0,12,5039,2662,6.0,12
-13,3712,3712,3035,6.0,12,7099,3718,6.0,12
-15,4944,4944,4043,6.0,12,9511,4950,6.0,12

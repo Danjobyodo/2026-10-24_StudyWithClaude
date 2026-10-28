@@ -1,7 +1,0 @@
-# tools — ノートブック生成用ソース（研究の実行には不要）
-
-* `common_lib.py`, `d4_lib.py`, `msd_lib.py`：各ノートブックに埋め込まれる共通コードの唯一のソース。
-* `build_analysis.py`（`resource_analysis.ipynb`）、`build_d4val.py`（`D4_switching_validation.ipynb`）、`build_msdval.py`（`MSD_15to1_validation.ipynb`）：Markdown とコードセルからノートブックを生成する。`nbutil.py` は共通部品。
-* `python tools/build_all.py`：全ノートブックを再生成する（実行結果は消えるので、生成後に各ノートを実行する）。
-
-共通コードを変更する場合は、ノートブック内の埋め込みコードではなく、ここのソースを編集して再生成すること（全ノートの埋め込みコードが一致し続ける）。
