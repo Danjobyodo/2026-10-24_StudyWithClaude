@@ -1728,14 +1728,14 @@ def lockstep_full(L, Rin, Rout, noise, rng, ex=None):
                 agree=bool(nbad == 0 and abs(ht - hp) < 1e-9))
 
 
-def single_fault_scan(ex, n_sample=None, seeds=2, rng_seed=1, keep_failures=True):
+def single_fault_scan(ex, n_sample=None, seeds=2, rng_seed=1, keep_failures=True, only_window=False):
     """Single-fault injection over ALL noise locations of the protocol as simulated: every static
     location of the compiled circuit (gates incl. CCZ / CS / T^dag, resets, measurements, idling) with
     every Pauli of its channel, plus the dynamic switch-out faults (each Pauli after each possible physical
     CZ, idle faults of the CZ layers).  All other noise is off.  Every fault is run with `seeds` different
     measurement-randomness seeds (the outcomes of random measurements, hence the branches, differ); a
     fault 'fails' if any seed gives a nonzero output infidelity.  Not covered: other branches than the
-    sampled ones.
+    sampled ones.  only_window: restrict to the faults in the switching window (ex.window).
     Returns dict with the counts, the probability-weighted first-order coefficient
         c1 = sum_f (P(f) / p) * mean_seeds(infidelity)      (eps ~ c1 p for small p, this decoder),
     its split into the switching window (ex.window) and the rest, and (optionally) the failing faults."""
@@ -1763,6 +1763,8 @@ def single_fault_scan(ex, n_sample=None, seeds=2, rng_seed=1, keep_failures=True
             for q in circ.data_rb:
                 for ps in 'XYZ':
                     faults.append((('SOIDLE', layer, q), ps, nz.p_idle / p / 3, ('SO',)))
+    if only_window:                               # exhaustive over the switching window only
+        faults = [f for f in faults if f[3] in ex.window]
     r_ = np.random.default_rng(rng_seed)
     n_all = len(faults)
     if n_sample and n_sample < n_all:
