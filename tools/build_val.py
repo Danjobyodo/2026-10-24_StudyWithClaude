@@ -777,22 +777,30 @@ pd.DataFrame(rows).groupby(['Rin', 'p']).agg(runs=('trial', 'count'), measuremen
 * **網羅範囲**：コンパイルした回路の全ての雑音位置（ゲート、CCZ・CS・$T^\dagger$、初期化、測定、アイドル）× その雑音チャネルの全ての Pauli、さらに switch-out の**動的な故障**（測定結果に応じて適用される各補正 CZ の後の 15 通りの Pauli、補正 CZ 層のアイドル）。古典処理は雑音なし。
 * **測定分岐**：各故障を 2 つの測定乱数の種で実行する（ランダムな測定結果、したがって分岐が変わる）。どちらかで誤れば「失敗あり」。失敗しなかった故障が**全分岐で**訂正されるとは言えない。
 * **一次の係数**：$c_1=\sum_f (P(f)/p)\,\overline{\varepsilon}(f)$（$P(f)$ はその故障の確率：1 量子ビット脱分極の各 Pauli $p/3$、2 量子ビット $p/15$、3 量子ビット $p/63$、反転 $p$、アイドルは $p_{\rm idle}/3$；$\overline\varepsilon$ は 2 つの種の不忠実度の平均）。小さい $p$ で $\varepsilon_K\approx c_1p$（この復号器での単一故障の寄与）。件数の比とは異なる。
-* 窓（`D4Experiment.window`：D4 相最後のラウンド〜FSC の最初のラウンド）の内外に分けて記録する。窓の外の失敗（例えば D4 相のより前のラウンド）も数える。
+* 窓（`D4Experiment.window`：D4 相最後のラウンド〜FSC の最初のラウンド）の内外に分けて記録する。窓の外の失敗（例えば D4 相のより前のラウンド）も数える。$d=3$ は全列挙、$d=5,7$ は失敗がまれなので無作為抽出では $c_1$ を推定できず、**窓の中を全列挙**する（$d=5$：A, B、$d=7$：B）。窓の外の寄与は $d=3$ の全列挙と $d=5$ の抽出で小さいことを確認する。$c_1$ の $d$ 依存は、比較ノートの「窓の項が $d$ によらない」という仮定の確認になる。
 失敗の原因は、少なくとも (i) D4 相最後のラウンドの CCZ ガジェット内の故障（CZ のドレッシングによる非 Pauli な効果を charge 復号器の誤りモデルが含まない）、(ii) switch-out の時間境界での検出器の基底（どの基底でも一部の誤りがハイパーエッジ）、(iii) $U$ 直前の $Z$ ラウンドの後に起きて $U$ を通る $X$ 誤り（その時点で検出できない）を含む。原因を復号器・測定ガジェット・順序・境界のどれに帰すべきかの完全な分類はしていない（未解決）。'''),
     code(r'''t0 = time.time()
 N5 = {}
-for d, pi, ns in [(3, 1.0, None), (3, 0.0, None), (5, 1.0, 1500 if QUICK else 6000)]:
+CONFIGS = [(3, 1.0, None, False), (3, 0.0, None, False), (5, 1.0, 1500 if QUICK else 6000, False)]
+if not QUICK:                                    # exhaustive over the switching window (where c1 sits)
+    CONFIGS += [(5, 1.0, None, True), (5, 0.0, None, True), (7, 0.0, None, True)]
+rows = []
+for d, pi, ns, win in CONFIGS:
     ex = D4Experiment(d, d, d, d, NoiseModel(1e-3, p_idle=pi * 1e-3))
-    r = single_fault_scan(ex, n_sample=ns, seeds=2)
-    N5[(d, pi)] = r
-    info(f'N5 d={d}, scenario {"A" if pi else "B"}: single faults ({"all" if ns is None else "random sample of"} '
-         f'{r["n_tested"]} of {r["n_faults_total"]}, incl. dynamic switch-out faults, 2 seeds)',
+    r = single_fault_scan(ex, n_sample=ns, seeds=2, only_window=win)
+    N5[(d, pi, win)] = r
+    scope = 'switching window, all' if win else ('all' if ns is None else 'random sample of')
+    info(f'N5 d={d}, scenario {"A" if pi else "B"}: single faults ({scope} {r["n_tested"]} of {r["n_faults_total"]}, '
+         f'incl. dynamic switch-out faults, 2 seeds)',
          f'failing {r["n_fail"]} (window {r["n_fail_window"]}, outside {r["n_fail_outside"]}); first-order coefficient '
          f'c1 = {r["c1"]:.2f} (window {r["c1_window"]:.2f}, outside {r["c1_outside"]:.2f}); by block {r["by_block"]}')
-dyn = [f for f in N5[(3, 1.0)]['failures'] if f['fault'].startswith("('SO")]
+    rows.append(dict(d=d, scenario='A' if pi else 'B', scope=scope, faults=r['n_tested'], failing=r['n_fail'],
+                     c1_window=r['c1_window'], c1_outside=r['c1_outside']))
+dyn = [f for f in N5[(3, 1.0, False)]['failures'] if f['fault'].startswith("('SO")]
 print('failing dynamic switch-out faults at d=3 (A):', len(dyn))
 print('%.0f s' % (time.time() - t0))
-pd.DataFrame(N5[(3, 1.0)]['failures'][:30])'''),
+display(pd.DataFrame(rows).round(3))
+pd.DataFrame(N5[(3, 1.0, False)]['failures'][:30])'''),
     md(r'''## N9. switch-out の物理スケジュール
 switch-out の補正 $\mathrm{CZ}(\Gamma(a))$ は、全ての $S^g_v$ の CZ 対の和集合の辺彩色による**固定の層スケジュール**で適用する（層数は測定結果によらない最悪値で、時間の計数に使う）。(i) 各層で同じ量子ビットを 2 回使わない、(ii) どの $\kappa$ でも適用される CZ が $\prod_{v\in\kappa}S^g_v$ の CZ 部分（同じ対が偶数回なら相殺）と一致する、(iii) 時間の計数 `block_steps` が $g$ の読み出し 1 ＋層数であること、を確認する。'''),
     code(r'''for d in (3, 5, 7, 9):
