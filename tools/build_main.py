@@ -16,13 +16,13 @@ EMBED_CAL = _embed('results/surface_code_plog.csv')
 _sha = lambda t: hashlib.sha256(t.encode()).hexdigest()[:16]
 CONCLUSION = r'''
 ## 結論
-本研究で構成した回路・スケジュール・復号器と、§II-2 のモデル（外挿を含む）に基づく結論。データ：`production-20261029T053925Z-29f79c`（329 万ショット）。数値は `results/cost_comparison.csv`。
+本研究で構成した回路・スケジュール・復号器と、§II-2 のモデル（外挿を含む）に基づく結論。データ：`production-20261029T150244Z-88b3f1`（379 万ショット）。数値は `results/cost_comparison.csv`。
 
-1. **本来のシミュレーション**：Kobayashi 方式の出力誤りは $d\ge5$ で $d$ をほとんど下げず、シナリオ B で $\varepsilon_K\approx(3\text{–}8)\,p$、A ではさらに大きい（$p=10^{-3}$ で約 20%）。主因は切り替えの窓での単一故障で、`validation.ipynb` N5 で窓を全列挙した一次の係数は $c_1=3.1$（B, $d=5$）、$3.9$（B, $d=7$）、$3.0$（A, $d=5$）と $d\ge5$ でほぼ一定、測定値と整合する。このモデル（窓の項の $d$ 依存を許した感度モデルでも）では、評価した全ての $(p,$ 要求誤り$)$ で要求に届かない（`not_reached_model`）。これは**本研究の回路・復号器での結果**であり、方式として不可能という意味ではない。
-2. **窓の雑音を除いた診断**（同じ復号器）では $\varepsilon_K$ は $d$ とともに下がる（測定範囲の端 $p=3\times10^{-4}$ で、当てはめたモデルの減少率は距離 2 ごとに A 約 4.2 倍、B 約 3.5 倍）。この診断のモデルを費用比較に入れると、要求 $10^{-6}$ 以下では Kobayashi 方式の体積は Litinski 方式（候補集合内の最小）の 2.7〜39 倍（A：4.2〜39 倍、$p=10^{-3}$ では届かない；B：2.7〜33 倍）。並ぶか下回るのは要求 $10^{-4}$ の一部（B・$p=10^{-4}$ で 0.52 倍）だけ。多くの行は $d>9$ や低い $p$ への外挿で、ブートストラップの範囲は表の `_16`/`_84` 列。
-3. **解釈**：本研究の実装では、Kobayashi 方式の性能は切り替えの窓の扱いで決まっている。窓の雑音を除いた診断でも蒸留の方が体積が小さい傾向が残るが、診断は最適な復号器の性能の限界（上界・下界）ではなく、また外挿に依存するので、**最適化された D4 方式に対する一般的な優劣を示すものではない**。
-4. 費用の差の内訳：D4 相の 1 ラウンドが長く（CCZ を含む X 型安定化子の測定 28 ステップ＋$Z$ 検査 6 ステップ）雑音の位置が多い、出力 1 個のために $d\times d$ 格子全体を $O(d)$ ラウンド使う（体積 $\approx632d^3$）。switch-in のラウンド数は $\kappa_{\rm in}\ge0.6$ で $\varepsilon_K$ がほぼ変わらない（窓の項が支配するため）。
-5. **結論を変えうる要因**（いずれも未解決）：切り替えの窓を扱える復号器（[Dav] の JIT decoder）や回路の改良、測定スケジュールの最適化（FSC 14 → 6 ステップ）、CCZ の実際の誤り率、FSC → 通常パッチの変換（未計上）、Litinski 側の状態注入（未計上）、Litinski 側を回路レベルでシミュレーションした場合との差。
+1. **改良（第 4 回レビュー後）の効果**：$U$ の直前の $Z$ 検査を 2 ラウンドにしたことで、切り替えの窓の単一故障の一次の係数は B で $d=5$：$3.1\to0.27$、$d=7$：$3.9\to0$ になり（`validation.ipynb` N5）、シナリオ B の出力誤りは $d$ とともに下がるようになった（$p=10^{-4}$ で $d=5$：$2\times10^{-5}$、$d=7$：$8\times10^{-6}$、$d=9$：22,360 ショットで失敗 0）。
+2. **残る窓の項**：本来のシミュレーションと窓の雑音を除いた診断の差は、$d=7$ と $d=9$ でほぼ同じで、$p$ について 2 次以上（B で $\propto p^{2.4}$ 程度）。窓の誤りを 2 個以上の故障が起こす経路が残っている（窓の実効的な故障距離が $d$ とともに伸びていない）と解釈できる。これを $d$ によらない項とするモデル（`main`）では、Kobayashi 方式が要求に届くのは**シナリオ B・要求 $10^{-4}$・$p\le2\times10^{-4}$** で、体積は Litinski 方式（候補集合内の最小）の **0.54 倍**（$p=10^{-4}$、$d=3$）と 1.6 倍（$p=2\times10^{-4}$、$d=5$）。要求 $10^{-6}$ 以下には届かない（このモデルの範囲で）。窓の項の $d$ 依存を許した感度モデル（`altW`）では B・要求 $10^{-6}$・$p\le3\times10^{-4}$ で届くが、体積は 180〜860 倍。シナリオ A（アイドル雑音あり）はほぼ全ての条件で届かない。
+3. **窓の雑音を除いた診断**（同じ復号器）：要求 $10^{-6}$ 以下で、Kobayashi 方式の体積は Litinski 方式の B で 1.8〜13 倍、A で 2.7〜39 倍（$p=10^{-3}$・A は届かない）。FSC のラウンドを検証済みの 8 ステップで数えると（時間だけの感度）B で 1.5〜11 倍。要求 $10^{-4}$ では B で 0.37〜9.6 倍（$p\le2\times10^{-4}$ で 1 未満）。診断は最適な復号器の性能の限界ではない。
+4. **解釈**：Kobayashi 方式が有利になりうるのは、アイドル雑音が小さく、物理誤り率が低く（$p\lesssim2\times10^{-4}$）、要求精度が緩い（$\sim10^{-4}$）領域である。実用的な精度（$10^{-6}$ 以下）では、本研究の実装では切り替えの窓の 2 次の誤りと、D4 相のラウンドの長さ（体積 $\approx632d^3$）のため蒸留の方が体積が小さい。いずれも**本研究の回路・復号器と外挿の範囲での結果**であり、最適化された D4 方式に対する一般的な優劣を示すものではない。
+5. **結論を変えうる要因**（未解決）：窓の 2 次の誤りを除く復号・回路（JIT decoder [Dav]、CCZ ガジェットの flag 化など）、回路レベルの誤りモデルを持つ flux 復号器（並列スケジュールを使えるようにする）、CCZ の実際の誤り率、FSC → 通常パッチの変換と Litinski 側の状態注入（どちらも未計上）、Litinski 側を回路レベルでシミュレーションした場合との差。
 '''
 
 LIT_CODE = r"""
@@ -88,6 +88,7 @@ DATA_MODE = 'reference'
 P_EVAL = [1e-4, 2e-4, 3e-4, 5e-4, 1e-3]
 TARGETS = [1e-4, 1e-6, 1e-8, 1e-10]
 N_BOOT = 200
+W_DMIN = 7          # the window term of the main model is fitted on d >= W_DMIN (see II-2)
 SCENARIOS = {'A': 'アイドル雑音あり (p_idle = p)', 'B': 'アイドル雑音なし (p_idle = 0)'}
 STEPS_PER_CYCLE = 6
 PLOG_SOURCE = 'calibrated'
@@ -180,7 +181,7 @@ g.round({'eps': 6, 'stderr': 6, 'errors_per_shot': 1, 'eps_over_p': 2})
 ### II-2. $d$ と $p$ への依存のモデル（外挿の根拠）
 データの構造（II-1）：noisy では $d\ge5$ で $\varepsilon_K$ が $d$ でほとんど下がらない。quiet（窓の雑音なし）では $d$ とともに下がる。そこで次の**モデル（仮定）**を使う。
 * **bulk**（窓の外の寄与）：quiet のデータに $\varepsilon_{\rm bulk}=\exp[a + c\,d + (b + e\,d)\log p]$。
-* **窓の項**：noisy のデータ（$d\ge5$）に $\varepsilon_K=\varepsilon_{\rm bulk}+W$、$W(p)=w\,p^{\gamma}$（$d$ によらないと**仮定**）。感度を見るため $W=w\,p^{\gamma}e^{\delta(d-7)}$（$d$ に依存しうる）も当てはめる。
+* **窓の項**：noisy のデータに $\varepsilon_K=\varepsilon_{\rm bulk}+W$、$W(p)=w\,p^{\gamma}$（$d$ によらないと**仮定**）を、$d\ge$ `W_DMIN`（＝7、シミュレーションした最大の距離の側）の点に当てはめる（`main`）。$d=5$ には単一故障の一次の寄与が残る（`validation.ipynb` N5：窓の一次の係数は B で $d=5$ が 0.27、$d=7$ が 0）ので、大きい $d$ での振る舞いを表すために $d\ge7$ を使う。感度として、$d\ge5$ の点に当てはめた $d$ によらない $W$（`W5`）と、$W=w\,p^{\gamma}e^{\delta(d-7)}$（$d$ に依存しうる、`altW`、$d\ge5$）も示す。
 * 当てはめは最尤法：各点の不忠実度の和 $s$（1/2 単位で数えた $2s$）を、平均 $2\,\mathrm{shots}\,\varepsilon$ の Poisson 分布として扱う。**失敗 0 の点も含める**（失敗の多い点だけの対数回帰にしない）。
 * **当てはめの可否の判定**：bulk の点について、設計行列の階数 4、異なる $d$ が 3 個以上、異なる $p$ が 2 個以上、失敗のある点が 5 個以上、失敗の合計 20 回以上。満たさなければ**ここで停止し、最小費用は計算しない**（`quick` のデータはこれを満たさない）。
 * **不確かさ**：当てはめたモデルから各点の $2s$ を Poisson で再標本化して当てはめ直すパラメトリック・ブートストラップ（`N_BOOT` 回；bulk、窓の項、$d$ 依存の窓の項はそれぞれ自分の当てはめから再標本化）。打ち切り規則（時間または失敗数）の影響は考慮していない。
@@ -226,39 +227,46 @@ rng_b = np.random.default_rng(SEED + 1)
 q16 = lambda v: np.quantile(v, 0.16)
 q84 = lambda v: np.quantile(v, 0.84)
 supp = lambda th, p: np.exp(-2 * (th[1] + th[3] * np.log(p)))
+VARIANTS = ('main', 'altW', 'W5')          # index 1, 2, 3 of the parameter tuple
 for s in SCENARIOS:
-    q_ = quiet[quiet.scenario == s]; n_ = main[(main.scenario == s) & (main.d >= 5)]
-    yq, yn = 2 * q_.s.values, 2 * n_.s.values
-    th_b = fit_bulk(q_, yq); t_w = fit_window(n_, yn, th_b); t_a = fit_window(n_, yn, th_b, alt=True)
-    boot = []
+    q_ = quiet[quiet.scenario == s]
+    n7 = main[(main.scenario == s) & (main.d >= W_DMIN)]       # window term: the largest distances
+    n5 = main[(main.scenario == s) & (main.d >= 5)]            # sensitivities: from d = 5 on
+    th_b = fit_bulk(q_, 2 * q_.s.values)
+    t_m = fit_window(n7, 2 * n7.s.values, th_b)
+    t_a = fit_window(n5, 2 * n5.s.values, th_b, alt=True)
+    t_5 = fit_window(n5, 2 * n5.s.values, th_b)
+    mu = lambda df, tw: 2 * df.shots.values * (bulk_eps(th_b, df.d.values, df.p.values) + win_eps(tw, df.d.values, df.p.values))
     muq = 2 * q_.shots.values * bulk_eps(th_b, q_.d.values, q_.p.values)
-    mun = 2 * n_.shots.values * (bulk_eps(th_b, n_.d.values, n_.p.values) + win_eps(t_w, n_.d.values, n_.p.values))
-    mua = 2 * n_.shots.values * (bulk_eps(th_b, n_.d.values, n_.p.values) + win_eps(t_a, n_.d.values, n_.p.values))
+    m7, ma, m5 = mu(n7, t_m), mu(n5, t_a), mu(n5, t_5)
+    boot = []
     for b in range(N_BOOT):                  # each model is resampled from its own fit
-        yq_b = rng_b.poisson(muq).astype(float)
-        yn_b, ya_b = rng_b.poisson(mun).astype(float), rng_b.poisson(mua).astype(float)
-        tb = fit_bulk(q_, yq_b)
-        boot.append((tb, fit_window(n_, yn_b, tb), fit_window(n_, ya_b, tb, alt=True)))
+        tb = fit_bulk(q_, rng_b.poisson(muq).astype(float))
+        boot.append((tb, fit_window(n7, rng_b.poisson(m7).astype(float), tb),
+                     fit_window(n5, rng_b.poisson(ma).astype(float), tb, alt=True),
+                     fit_window(n5, rng_b.poisson(m5).astype(float), tb)))
     p_ref = float(q_.p.min())
-    FITS[s] = dict(central=(th_b, t_w, t_a), boot=boot, p_min_bulk=p_ref, d_max_data=int(main.d.max()))
+    FITS[s] = dict(central=(th_b, t_m, t_a, t_5), boot=boot, p_min_bulk=p_ref, d_max_data=int(main.d.max()))
     sup_b = [supp(bt[0], p_ref) for bt in boot]
     Wp = [win_eps(bt[1], 7, p_ref) / p_ref for bt in boot]
+    W5p = [win_eps(bt[3], 7, p_ref) / p_ref for bt in boot]
     dl = [bt[2][2] for bt in boot]
-    rows.append(dict(scenario=s, bulk_points=len(q_), window_points=len(n_), p_ref=p_ref,
+    rows.append(dict(scenario=s, bulk_points=len(q_), window_points=len(n7), p_ref=p_ref,
                      bulk_suppression_per_2d=supp(th_b, p_ref), bulk_supp_16=q16(sup_b), bulk_supp_84=q84(sup_b),
-                     W_over_p=win_eps(t_w, 7, p_ref) / p_ref, W_over_p_16=q16(Wp), W_over_p_84=q84(Wp),
-                     W_gamma=t_w[1], alt_delta=t_a[2], alt_delta_16=q16(dl), alt_delta_84=q84(dl)))
+                     W_over_p=win_eps(t_m, 7, p_ref) / p_ref, W_over_p_16=q16(Wp), W_over_p_84=q84(Wp), W_gamma=t_m[1],
+                     W5_over_p=win_eps(t_5, 7, p_ref) / p_ref, W5_over_p_16=q16(W5p), W5_over_p_84=q84(W5p),
+                     alt_delta=t_a[2], alt_delta_16=q16(dl), alt_delta_84=q84(dl)))
 
-def eps_K_model(s, d, p, w='noisy', params=None, alt=False):
-    th_b, t_w, t_a = params if params is not None else FITS[s]['central']
-    v = bulk_eps(th_b, d, p)
+def eps_K_model(s, d, p, w='noisy', params=None, variant='main'):
+    pr = params if params is not None else FITS[s]['central']
+    v = bulk_eps(pr[0], d, p)
     if w == 'noisy':
-        v = v + win_eps(t_a if alt else t_w, d, p)
+        v = v + win_eps(pr[1 + VARIANTS.index(variant)], d, p)
     return float(min(v, 1.0))
 pd.DataFrame(rows).round(4)
 '''),
     md(r'''
-`bulk_suppression_per_2d`：当てはめた bulk のモデルで距離を 2 増やしたときの減少率（$p$ = `p_ref`＝quiet の最小の $p$、測定範囲の端）。`W_over_p`：窓の項 $W/p$（$d=7$、同じ $p$）。`alt_delta`：$W$ の $d$ 依存を許したときの $\delta$（$\delta<0$ なら $d$ とともに減る）。いずれも**当てはめたモデルの値**であり、実測の抑制率ではない。
+`bulk_suppression_per_2d`：当てはめた bulk のモデルで距離を 2 増やしたときの減少率（$p$ = `p_ref`＝quiet の最小の $p$、測定範囲の端）。`W_over_p`：窓の項 $W/p$（`main`、同じ $p$）、`W5_over_p`：$d\ge5$ に当てはめた場合。`alt_delta`：$W$ の $d$ 依存を許したときの $\delta$（$\delta<0$ なら $d$ とともに減る）。いずれも**当てはめたモデルの値**であり、実測の抑制率ではない。
 '''),
     code(r'''
 fig, axes = plt.subplots(2, 2, figsize=(11, 8), sharex=True, sharey=True)
@@ -376,18 +384,18 @@ plt.tight_layout(); plt.savefig(f'{FIGURES}/cost_comparison{OUT_SUFFIX}.png', dp
     md(r'''
 ### IV-2. 要求誤りごとの最小費用
 * Litinski 方式：要求を満たす候補のうち体積最小のもの（候補集合内の最小）。
-* Kobayashi 方式：要求を満たす最小の $d$（$d\le61$ の範囲で探索）。`kobayashi_*` は本来のシミュレーションのモデル（bulk＋窓の項）、`kobayashi_diag_*` は診断（窓の雑音なし）、`kobayashi_altW_*` は窓の項の $d$ 依存を許したモデル（感度）。
+* Kobayashi 方式：要求を満たす最小の $d$（$d\le61$ の範囲で探索）。`kobayashi_*` は本来のシミュレーションのモデル（bulk＋窓の項、`main`）、`kobayashi_diag_*` は診断（窓の雑音なし）、感度として `kobayashi_W5_*`（窓の項を $d\ge5$ に当てはめた場合）と `kobayashi_altW_*`（窓の項の $d$ 依存を許したモデル）。
 * `status`：ブートストラップの複製のうち、$d\le61$ で要求に届く割合が 84% 以上なら `reached`、16% 以下なら `not_reached_model`（このモデル・探索範囲では届かない。方式として不可能という意味ではない）、その間は `unresolved`。体積の `_16` / `_84` は届いた複製の体積の 16〜84% 範囲。
 * `d_extrapolated`：選ばれた $d$ がシミュレーションした最大の $d$ を超える（$d$ 方向の外挿）。`p_extrapolated`：$p$ が bulk の当てはめに使った最小の $p$ より小さい（$p$ 方向の外挿）。外挿でなくても値はモデルによる推定であり、その要求誤りを直接観測したものではない。
 * `kobayashi_diag_volume_fsc8`：同じ $d$ で FSC のラウンドを 8 ステップで数えた体積（時間だけの感度、II-3）。
 * 各行に入力データの来歴（`data_mode`, `mc_sha256`, `cal_sha256`, `mc_run_ids`, ...）を記録する。
 '''),
     code(r'''
-def dmin(s, p, t, w_='noisy', params=None, alt=False):
-    return next((d for d in range(3, 62, 2) if eps_K_model(s, d, p, w_, params, alt) <= t), None)
-def kob_entry(s, p, t, w_, alt=False):
-    dc = dmin(s, p, t, w_, alt=alt)
-    db = [dmin(s, p, t, w_, bt, alt) for bt in FITS[s]['boot']]
+def dmin(s, p, t, w_='noisy', params=None, variant='main'):
+    return next((d for d in range(3, 62, 2) if eps_K_model(s, d, p, w_, params, variant) <= t), None)
+def kob_entry(s, p, t, w_, variant='main'):
+    dc = dmin(s, p, t, w_, variant=variant)
+    db = [dmin(s, p, t, w_, bt, variant) for bt in FITS[s]['boot']]
     reach = [d for d in db if d is not None]
     frac = len(reach) / len(db)
     status = 'reached' if frac >= 0.84 else 'not_reached_model' if frac <= 0.16 else 'unresolved'
@@ -411,12 +419,12 @@ for s in SCENARIOS:
                      litinski_qubits=lit.qubits if lit is not None else np.nan,
                      litinski_time_steps=lit.time_steps if lit is not None else np.nan,
                      litinski_volume=lit.volume_steps if lit is not None else np.nan)
-            for pre, w_, alt in (('kobayashi', 'noisy', False), ('kobayashi_diag', 'quiet', False),
-                                 ('kobayashi_altW', 'noisy', True)):
-                r.update({f'{pre}_{k}': v for k, v in kob_entry(s, p, t, w_, alt).items()})
+            for pre, w_, var in (('kobayashi', 'noisy', 'main'), ('kobayashi_diag', 'quiet', 'main'),
+                                 ('kobayashi_W5', 'noisy', 'W5'), ('kobayashi_altW', 'noisy', 'altW')):
+                r.update({f'{pre}_{k}': v for k, v in kob_entry(s, p, t, w_, var).items()})
             rows.append(r)
 CMP = pd.DataFrame(rows)
-for pre in ('kobayashi', 'kobayashi_diag', 'kobayashi_altW'):
+for pre in ('kobayashi', 'kobayashi_diag', 'kobayashi_W5', 'kobayashi_altW'):
     CMP[f'ratio_{pre}_over_litinski'] = CMP[f'{pre}_volume'] / CMP.litinski_volume
 CMP['kobayashi_diag_volume_fsc8'] = [kobayashi_cost_fsc8(d)['volume'] if d != '—' else np.nan for d in CMP.kobayashi_diag_d]
 CMP['ratio_kobayashi_diag_fsc8_over_litinski'] = CMP.kobayashi_diag_volume_fsc8 / CMP.litinski_volume
@@ -424,7 +432,7 @@ for k, v in PROV.items():
     CMP[k] = v
 pd.set_option('display.max_colwidth', 40)
 CMP[['scenario', 'p', 'target', 'litinski_protocol', 'litinski_volume', 'kobayashi_status', 'kobayashi_volume',
-     'kobayashi_altW_status', 'kobayashi_diag_status', 'kobayashi_diag_d', 'kobayashi_diag_d_extrapolated', 'p_extrapolated',
+     'ratio_kobayashi_over_litinski', 'kobayashi_W5_status', 'kobayashi_altW_status', 'kobayashi_diag_status', 'kobayashi_diag_d', 'kobayashi_diag_d_extrapolated', 'p_extrapolated',
      'ratio_kobayashi_diag_over_litinski', 'kobayashi_diag_volume_16', 'kobayashi_diag_volume_84',
      'ratio_kobayashi_diag_fsc8_over_litinski']]
 '''),
