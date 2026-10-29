@@ -115,7 +115,7 @@
   },
   "V5b L=4: every Pauli error of weight <= L-1 satisfies Knill-Laflamme -> D4-phase distance = L": {
    "status": "PASS",
-   "detail": "15 stabilizer shifts of weight <= 3 enumerated (stop: infeasible); min LB_t = 5; d_Z = 4; X-shift = 7; 1s"
+   "detail": "15 stabilizer shifts of weight <= 3 enumerated (stop: infeasible); min LB_t = 5; d_Z = 4; X-shift = 7; 2s"
   },
   "V5b L=5: every Pauli error of weight <= L-1 satisfies Knill-Laflamme -> D4-phase distance = L": {
    "status": "PASS",
@@ -171,7 +171,7 @@
   },
   "V7 L=2: exact protocol, 200 random inputs/branches -> fidelity 1 with T^dag action": {
    "status": "PASS",
-   "detail": "min F = 1.000000000000, 79s"
+   "detail": "min F = 1.000000000000, 80s"
   },
   "V7 L=2 input |0>: output = T^dag |0>": {
    "status": "PASS",
@@ -215,7 +215,7 @@
   },
   "V7b L=4: protocol circuit on configuration inputs reproduces the phase formula F(a) (incl. T^dag between cosets)": {
    "status": "PASS",
-   "detail": "12 same-branch pairs, 37s"
+   "detail": "12 same-branch pairs, 40s"
   },
   "V8 L=1: F invariant under all 1 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
@@ -235,7 +235,7 @@
   },
   "V8 L=5: F invariant under all 49 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
-   "detail": "max local configs 16384, F0=0, F1=7, 1.4s"
+   "detail": "max local configs 16384, F0=0, F1=7, 1.5s"
   },
   "V8 L=6: F invariant under all 71 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
@@ -243,11 +243,11 @@
   },
   "V8 L=7: F invariant under all 97 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
-   "detail": "max local configs 16384, F0=0, F1=7, 4.8s"
+   "detail": "max local configs 16384, F0=0, F1=7, 4.7s"
   },
   "V8 L=8: F invariant under all 127 FSC generators; F(1)-F(0)=7 (T^dag)": {
    "status": "PASS",
-   "detail": "max local configs 16384, F0=0, F1=7, 8.8s"
+   "detail": "max local configs 16384, F0=0, F1=7, 8.3s"
   },
   "V9 L=3: every X-type gadget (unpruned) implements the projective measurement of its Clifford stabilizer": {
    "status": "PASS",
@@ -355,11 +355,11 @@
   },
   "M7 d=3 seed=1: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=1, qubits=53"
+   "detail": "after=-1, qubits=53"
   },
   "M7 d=3 seed=2: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=1, qubits=53"
+   "detail": "after=-1, qubits=53"
   },
   "M7 d=3: one gap tile adds 2d^2+1 qubits to the merged region (used for the ancilla strip)": {
    "status": "PASS",
@@ -371,11 +371,11 @@
   },
   "M7 d=5 seed=1: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=-1, qubits=149"
+   "detail": "after=1, qubits=149"
   },
   "M7 d=5 seed=2: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=-1, qubits=149"
+   "detail": "after=1, qubits=149"
   },
   "M7 d=5: one gap tile adds 2d^2+1 qubits to the merged region (used for the ancilla strip)": {
    "status": "PASS",
@@ -387,11 +387,11 @@
   },
   "M7 d=7 seed=1: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=1, qubits=293"
+   "detail": "after=-1, qubits=293"
   },
   "M7 d=7 seed=2: Z1Z2 random before, deterministic after merge, equals product of merged Z checks": {
    "status": "PASS",
-   "detail": "after=1, qubits=293"
+   "detail": "after=-1, qubits=293"
   },
   "M7 d=7: one gap tile adds 2d^2+1 qubits to the merged region (used for the ancilla strip)": {
    "status": "PASS",
@@ -411,11 +411,11 @@
   },
   "M9 d=5: all 11 multi-patch measurements P(x)Z_m are valid lattice surgeries (exact F2 criteria, merged-code distance >= d)": {
    "status": "PASS",
-   "detail": "merged (d_X, d_Z) = [(5, 5), (8, 5)]; 37s"
+   "detail": "merged (d_X, d_Z) = [(5, 5), (8, 5)]; 38s"
   },
   "M9 d=7: all 11 multi-patch measurements P(x)Z_m are valid lattice surgeries (exact F2 criteria)": {
    "status": "PASS",
-   "detail": "distance not computed at this d; 1s"
+   "detail": "distance not computed at this d; 2s"
   },
   "M9 d=3: stim - O_k random before, deterministic after one merged round, equal to predicted product (11 rotations x 2 seeds)": {
    "status": "PASS",
@@ -635,31 +635,31 @@
   },
   "N3 L=1 parallel schedule, p=0.03: proxy = exact non-Clifford circuit (30 runs)": {
    "status": "PASS",
-   "detail": "930 measurements (71 random), <H> values [-1.0, -0.0, 1.0], 0s"
+   "detail": "1080 measurements (70 random), <H> values [-1.0, -0.0, 1.0], 0s"
   },
   "N3 L=2 parallel schedule, p=0.01: proxy = exact non-Clifford circuit (8 runs)": {
    "status": "PASS",
-   "detail": "928 measurements (127 random), <H> values [0.0, 1.0], 7s"
+   "detail": "1056 measurements (131 random), <H> values [0.0, 1.0], 6s"
   },
   "N3 L=2 sequential schedule, p=0.01: proxy = exact non-Clifford circuit (4 runs)": {
    "status": "PASS",
-   "detail": "464 measurements (70 random), <H> values [-0.0, 1.0], 0s"
+   "detail": "528 measurements (73 random), <H> values [-1.0, 0.0], 0s"
   },
   "N3 L=2 parallel schedule, p=0.0: proxy = exact non-Clifford circuit (1 runs)": {
    "status": "PASS",
-   "detail": "116 measurements (8 random), <H> values [1.0], 1s"
+   "detail": "132 measurements (13 random), <H> values [1.0], 1s"
   },
   "N3b L=2 Rin=2, p=0.01: full adaptive path (flux corrections, decoded switch-out, physical CZ layers with noise, Pauli frame) proxy = exact non-Clifford circuit (6 runs)": {
    "status": "PASS",
-   "detail": "696 measurements (74 random), 84 flux corrections, 6 physical switch-out CZs, 6s"
+   "detail": "792 measurements (75 random), 85 flux corrections, 10 physical switch-out CZs, 5s"
   },
   "N3b L=2 Rin=2, p=0.03: full adaptive path (flux corrections, decoded switch-out, physical CZ layers with noise, Pauli frame) proxy = exact non-Clifford circuit (6 runs)": {
    "status": "PASS",
-   "detail": "696 measurements (100 random), 145 flux corrections, 8 physical switch-out CZs, 5s"
+   "detail": "792 measurements (104 random), 154 flux corrections, 6 physical switch-out CZs, 4s"
   },
   "N3b L=2 Rin=1, p=0.001: full adaptive path (flux corrections, decoded switch-out, physical CZ layers with noise, Pauli frame) proxy = exact non-Clifford circuit (2 runs)": {
    "status": "PASS",
-   "detail": "178 measurements (16 random), 4 flux corrections, 2 physical switch-out CZs, 0s"
+   "detail": "210 measurements (16 random), 8 flux corrections, 2 physical switch-out CZs, 0s"
   },
   "N4 d=3: noiseless protocol (with decoders) outputs the exact magic state": {
    "status": "PASS",
@@ -673,29 +673,29 @@
    "status": "PASS",
    "detail": "infidelities [0.0, 0.0, 0.0, 0.0, 0.0]"
   },
-  "N5 d=3, scenario A: single faults (all 58377 of 58377, incl. dynamic switch-out faults, 2 seeds)": {
+  "N5 d=3, scenario A: single faults (all 60891 of 60891, incl. dynamic switch-out faults, 2 seeds)": {
    "status": "INFO",
-   "detail": "failing 285 (window 278, outside 7); first-order coefficient c1 = 16.25 (window 15.95, outside 0.30); by block {\"('S1', 2, 'z')\": 4, \"('S1', 2, 'x')\": 3, \"('S1', 3, 'z')\": 9, \"('S1', 3, 'x')\": 194, \"('S1', 4, 'z')\": 50, \"('U',)\": 13, \"('S4', 1)\": 8, \"('SO',)\": 4}"
+   "detail": "failing 275 (window 268, outside 7); first-order coefficient c1 = 15.71 (window 15.41, outside 0.30); by block {\"('S1', 2, 'z')\": 4, \"('S1', 2, 'x')\": 3, \"('S1', 3, 'z')\": 5, \"('S1', 3, 'x')\": 200, \"('S1', 4, 'z')\": 2, \"('S1', 5, 'z')\": 25, \"('U',)\": 24, \"('S4', 1)\": 8, \"('SO',)\": 4}"
   },
-  "N5 d=3, scenario B: single faults (all 30879 of 30879, incl. dynamic switch-out faults, 2 seeds)": {
+  "N5 d=3, scenario B: single faults (all 32565 of 32565, incl. dynamic switch-out faults, 2 seeds)": {
    "status": "INFO",
-   "detail": "failing 226 (window 214, outside 12); first-order coefficient c1 = 5.41 (window 5.21, outside 0.20); by block {\"('S1', 2, 'x')\": 12, \"('S1', 3, 'z')\": 5, \"('S1', 3, 'x')\": 162, \"('S1', 4, 'z')\": 31, \"('U',)\": 12, \"('SO',)\": 4}"
+   "detail": "failing 180 (window 168, outside 12); first-order coefficient c1 = 4.16 (window 3.97, outside 0.20); by block {\"('S1', 2, 'x')\": 12, \"('S1', 3, 'z')\": 4, \"('S1', 3, 'x')\": 136, \"('S1', 5, 'z')\": 12, \"('U',)\": 12, \"('SO',)\": 4}"
   },
-  "N5 d=5, scenario A: single faults (random sample of 6000 of 263029, incl. dynamic switch-out faults, 2 seeds)": {
+  "N5 d=5, scenario A: single faults (random sample of 6000 of 269799, incl. dynamic switch-out faults, 2 seeds)": {
+   "status": "INFO",
+   "detail": "failing 1 (window 1, outside 0); first-order coefficient c1 = 1.50 (window 1.50, outside 0.00); by block {\"('S1', 7, 'z')\": 1}"
+  },
+  "N5 d=5, scenario A: single faults (switching window, all 58343 of 58343, incl. dynamic switch-out faults, 2 seeds)": {
+   "status": "INFO",
+   "detail": "failing 26 (window 26, outside 0); first-order coefficient c1 = 0.88 (window 0.88, outside 0.00); by block {\"('S1', 5, 'x')\": 6, \"('S1', 7, 'z')\": 20}"
+  },
+  "N5 d=5, scenario B: single faults (switching window, all 33569 of 33569, incl. dynamic switch-out faults, 2 seeds)": {
+   "status": "INFO",
+   "detail": "failing 11 (window 11, outside 0); first-order coefficient c1 = 0.27 (window 0.27, outside 0.00); by block {\"('S1', 5, 'x')\": 11}"
+  },
+  "N5 d=7, scenario B: single faults (switching window, all 67789 of 67789, incl. dynamic switch-out faults, 2 seeds)": {
    "status": "INFO",
    "detail": "failing 0 (window 0, outside 0); first-order coefficient c1 = 0.00 (window 0.00, outside 0.00); by block {}"
-  },
-  "N5 d=5, scenario A: single faults (switching window, all 51573 of 51573, incl. dynamic switch-out faults, 2 seeds)": {
-   "status": "INFO",
-   "detail": "failing 74 (window 74, outside 0); first-order coefficient c1 = 3.02 (window 3.02, outside 0.00); by block {\"('S1', 5, 'x')\": 16, \"('S1', 6, 'z')\": 58}"
-  },
-  "N5 d=5, scenario B: single faults (switching window, all 28899 of 28899, incl. dynamic switch-out faults, 2 seeds)": {
-   "status": "INFO",
-   "detail": "failing 98 (window 98, outside 0); first-order coefficient c1 = 3.10 (window 3.10, outside 0.00); by block {\"('S1', 5, 'x')\": 44, \"('S1', 6, 'z')\": 54}"
-  },
-  "N5 d=7, scenario B: single faults (switching window, all 58647 of 58647, incl. dynamic switch-out faults, 2 seeds)": {
-   "status": "INFO",
-   "detail": "failing 105 (window 105, outside 0); first-order coefficient c1 = 3.87 (window 3.87, outside 0.00); by block {\"('S1', 7, 'x')\": 33, \"('S1', 8, 'z')\": 72}"
   },
   "N9 d=3: switch-out CZ schedule valid (no qubit used twice per layer, covers every kappa), time = readout + 1 CZ layer(s)": {
    "status": "PASS",
@@ -712,6 +712,18 @@
   "N9 d=9: switch-out CZ schedule valid (no qubit used twice per layer, covers every kappa), time = readout + 1 CZ layer(s)": {
    "status": "PASS",
    "detail": "128 distinct CZ pairs"
+  },
+  "N10 L=3: parallel FSC schedule (6 CNOT layers) deterministic, circuit distance >= L in both bases": {
+   "status": "PASS",
+   "detail": "distances {'X': 3, 'Z': 6}, search seed 0, 6s"
+  },
+  "N10 L=5: parallel FSC schedule (6 CNOT layers) deterministic, circuit distance >= L in both bases": {
+   "status": "PASS",
+   "detail": "distances {'X': 5, 'Z': 7}, search seed 0, 12s"
+  },
+  "N10 L=7: parallel FSC schedule (6 CNOT layers) deterministic, circuit distance >= L in both bases": {
+   "status": "PASS",
+   "detail": "distances {'X': 7, 'Z': 10}, search seed 0, 36s"
   },
   "N6 Litinski 2019 Litinski2019 (15-to-1)_{7,3,3} at p=0.0001 reproduces the published output": {
    "status": "PASS",
