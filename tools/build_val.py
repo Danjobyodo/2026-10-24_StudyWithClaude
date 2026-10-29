@@ -23,11 +23,12 @@ cells = [md(r'''
 | M1–M5 | 15-to-1 の行列・回路・誤り検出、Fig. 17a/b の回転 | 状態ベクトル |
 | M6–M9 | tile 数・時間、物理レベルの格子手術（Fig. 17c の 11 個の多パッチ測定） | $\mathbb F_2$、MILP、stim |
 | **第 3 部** | **雑音付きシミュレーション（v5）** | |
-| N1 | Takada らの方法の適用条件（Definition 2, Sec. VIII）が D4 code switching で成り立つ | $\mathbb F_2$ の厳密判定（$L=2..6$） |
+| N1 | Takada らの方法の十分条件（Definition 2, Sec. VIII）の、D4 code switching の生成元・論理演算子についての代数的な確認 | $\mathbb F_2$ の厳密判定（$L=2..7$ と 9。有限サイズの確認であり一般の $L$ の証明ではない）、演算子の比較は大域位相だけを許す厳密比較＋負の対照 |
 | N2 | Pauli proxy の「ドレッシング」$C_e=D^\dagger X^eDX^e$ が Clifford で、実装したゲート列と一致 | 全ての非 Clifford ゲート・全パターンの行列 |
-| N3 | **Pauli proxy 回路（Clifford）と真の非 Clifford 回路の一致** | 同じ誤り・同じ補正で $L=1,2$ を並走させ、全測定の確率と最終 $\langle\bar H\rangle$ を比較 |
+| N3 | **Pauli proxy 回路（Clifford）と真の非 Clifford 回路の一致** | 同じ誤り・同じ補正で並走させ、全測定の確率と最終 $\langle\bar H\rangle$ を比較：(a) $L=1,2$、ランダムな $X$ 補正；(b) $L=2$、**本番と同じ適応処理**（flux 復号の補正、switch-out の復号済み読み出しと物理 CZ 層とその雑音、Pauli frame） |
 | N4 | 雑音なしで出力誤り 0（復号器込み） | $d=3,5,7$ |
-| N5 | 1 個の故障に対する復号の結果（INFO） | $d=3$ 全列挙、$d=5$ 抽出 |
+| N5 | 1 個の故障に対する結果（INFO：故障の網羅範囲と失敗の記録） | switch-out の動的な CZ・アイドルを含む全雑音位置×全 Pauli、各 2 つの測定乱数の種；$d=3$ 全列挙（A, B）、$d=5$ 抽出。確率で重み付けした一次の係数 $c_1$（$\varepsilon\approx c_1p$）を窓の内外に分けて記録 |
+| N9 | switch-out の物理スケジュール | 補正 CZ の層が正しい（同じ量子ビットを同時に使わない）、適用される CZ が $\prod_{v\in\kappa}S^g_v$ の CZ 部分（偶数回は相殺）と一致、時間の計数 |
 | N6 | Litinski（2019）の誤り予算の再実装が公開値を再現 | 公開ノートブックに保存された出力 8 件 |
 | N7 | 較正用の表面符号回路 | 雑音なしで検出器 0、回路レベルの距離 $=d$、1 ラウンド 6 時間ステップ |
 | N8 | GoSC 15-to-1 の誤り予算モデル | 雑音なしで誤り 0、入力 $Z$ 誤りだけなら $35p^3$ |
@@ -687,12 +688,20 @@ record('M9 fast measured-set construction (used for d up to 15) = verified const
 ## N1. Takada らの方法の適用条件
 Takada–Bartlett–Williamson の Clifford-stabilizer simulation（Pauli proxy 法）は、非 Clifford な「Clifford 安定化子」を測る回路に一般に使えるわけではない。十分条件（Definition 2 と Sec. VIII）を D4 code switching の各段について確認する（`takada_conditions`）：
 * (a) X 型 Clifford 安定化子の X 因子と CZ 因子の台が互いに素（transversal、式 (131)）。
-* (b) CZ, S への X/Y 誤りのドレッシングが単一量子ビット $Z$（ドレッシングの軸が全量子ビットで $Z$）。
+* (b) CZ, S への X/Y 誤りのドレッシングが単一量子ビット $Z$（ドレッシングの軸が全量子ビットで $Z$）。行列は**大域位相だけを許す厳密比較**（`equal_up_to_phase`）で比べる（以前の版は要素の絶対値を比べており、$I$ と $Z$ を区別できなかった。下の負の対照で、この判定が $I$・別の軸・相対位相の違いを FAIL にすることを確認する）。
 * (c) 測定する生成元どうしの群交換子が、その時点の $Z$ 安定化子の張る空間に入る（実効的な可換性、式 (58) / Lemma 1）。switch-in では FSC $|+_L\rangle\otimes|0\rangle_g$ を、D4 側の CZ でドレスした生成元とドレスした論理 $\bar X$ で表して確認する（Sec. VIII B の生成元の選び方）。
 * (d) primary-support exactness（Definition 1）：X 台が線形独立。
 * (e) $U$ と switch-out の補正網が CNOT と対角第 3 階層ゲートのみ（Sec. VIII A, 式 (178)）。
-* (f) 出力の論理安定化子 $\bar H$ が Clifford で、FSC の X 検査と実効的に可換。'''),
-    code(r'''for L in range(2, 7):
+* (f) 出力の論理安定化子 $\bar H$ が Clifford で、FSC の X 検査と実効的に可換。
+
+**範囲**：これらは各段で測る生成元・論理演算子についての有限サイズ（$L=2..7$, 9；本番は $d=3,5,7,9$）の代数的確認である。プロトコル全体（切り替え・$U$・switch-out の順序を含む）で proxy が真の回路と一致することは、別に N3 で数値的に確認する（$L\le2$）。一般の $L$ についての証明ではない。'''),
+    code(r'''I2_, Z_, S_ = np.eye(2), np.diag([1, -1]), np.diag([1, 1j])
+neg = [equal_up_to_phase(np.eye(4), np.kron(I2_, Z_)), equal_up_to_phase(S_, Z_),
+       equal_up_to_phase(np.kron(Z_, I2_), np.kron(I2_, Z_)), equal_up_to_phase(np.diag([1, 1j]), np.diag([1, -1j]))]
+pos = [equal_up_to_phase(1j * Z_, Z_), equal_up_to_phase(-np.kron(I2_, Z_), np.kron(I2_, Z_))]
+record('N1 operator comparison is exact up to a global phase (I vs Z, S vs Z, wrong qubit, relative phase rejected)',
+       not any(neg) and all(pos), f'negative controls {neg}, positive controls {pos}')
+for L in list(range(2, 8)) + ([] if QUICK else [9]):
     t0 = time.time()
     for name, (ok, det) in takada_conditions(L).items():
         record(f'N1 L={L}: {name}', ok, det)
@@ -740,6 +749,22 @@ for L, Rin, Rout, seq, p, ntr in [(1, 2, 1, False, 0.03, 30), (2, 2, 1, False, 0
            bad == 0 and (p > 0 or hs == [1.0]), f'{nm} measurements ({nr} random), <H> values {sorted(set(hs))}, {time.time() - t0:.0f}s')
 pd.DataFrame(rows).groupby(['L', 'sequential', 'p']).agg(runs=('trial', 'count'), measurements=('n_meas', 'sum'),
                                                           mismatches=('n_mismatch', 'sum'), dressings=('n_dress', 'sum'))'''),
+    md(r'''### N3b. 本番と同じ適応処理の全経路（$L=2$）
+`lockstep_full`：本番の `D4Experiment.shot` をそのまま使い、flux 復号器の補正、switch-out の復号済み読み出し、物理的な補正 CZ の層とその雑音、Pauli frame、charge 復号器までを、proxy（stim）と真の回路の状態ベクトル（`TrueSim`）に同じ誤り・同じ測定結果で並走させる。S0（Clifford 回路で stim だけで厳密）は、その理想出力 $E|+_L\rangle|0\rangle_g$（$E$ はランダムな 2 量子ビット Pauli）で置き換える（S0 の多数の補助量子ビットを含む状態ベクトルはメモリに入らない）。真の回路側は proxy 側の状態や誤りの表現を使わず、ゲートを状態ベクトルに直接作用させる。'''),
+    code(r'''rows = []
+for Rin, p, ntr in [(2, 0.01, 2 if QUICK else 6), (2, 0.03, 2 if QUICK else 6), (1, 0.001, 2)]:
+    ex = D4Experiment(2, 1, Rin, 1, NoiseModel(p))
+    t0 = time.time(); bad = nm = nr = ncz = nco = 0
+    for tr in range(ntr):
+        r = lockstep_full(2, Rin, 1, NoiseModel(p), rng, ex=ex)
+        bad += not r['agree']; nm += r['n_meas']; nr += r['n_random']; ncz += r['so_cz']; nco += r['n_corr']
+        rows.append(dict(Rin=Rin, p=p, trial=tr, **r))
+    record(f'N3b L=2 Rin={Rin}, p={p}: full adaptive path (flux corrections, decoded switch-out, physical CZ layers '
+           f'with noise, Pauli frame) proxy = exact non-Clifford circuit ({ntr} runs)', bad == 0,
+           f'{nm} measurements ({nr} random), {nco} flux corrections, {ncz} physical switch-out CZs, {time.time() - t0:.0f}s')
+pd.DataFrame(rows).groupby(['Rin', 'p']).agg(runs=('trial', 'count'), measurements=('n_meas', 'sum'),
+                                             mismatches=('n_mismatch', 'sum'), corrections=('n_corr', 'sum'),
+                                             switch_out_cz=('so_cz', 'sum'))'''),
     md(r'''## N4. 雑音なしの全体（復号器込み）
 雑音を 0 にした本番と同じ実験（`D4Experiment`、復号器込み）で出力の不忠実度が 0 になること。switch-in のランダムな $S^g$ 測定結果、switch-out の $Z^g$ 読み出しとその補正、Pauli frame の扱いが正しいことを $d=3,5,7$ で確認する。'''),
     code(r'''for d in (3, 5, 7):
@@ -747,37 +772,51 @@ pd.DataFrame(rows).groupby(['L', 'sequential', 'p']).agg(runs=('trial', 'count')
     inf, st = ex.run(5, rng)
     record(f'N4 d={d}: noiseless protocol (with decoders) outputs the exact magic state', bool(np.all(inf == 0)),
            f'infidelities {inf.tolist()}')'''),
-    md(r'''## N5. 1 個の故障の復号（INFO：合否ではなく、復号器の性質の記録）
-距離 $d\ge3$ の耐故障なプロトコルと最適な復号器なら、1 個の故障は必ず訂正される。本研究の復号器（[Dav] の JIT decoder は参照できず独自に構成）で、雑音の位置ごとに 1 個の故障を強制して失敗するかを調べる。$d=3$ は全列挙（約 6 万通り、数分）、$d=5$ は無作為抽出。
-失敗が残るのは、主に (i) D4 相最後のラウンドの CCZ ガジェット内の故障（CZ のドレッシングによる非 Pauli な効果を charge 復号器の誤りモデルが含まない）と、(ii) switch-out の時間境界付近（$r$/$b$/$g$ の 3 種の電荷を 2 種の検出器で表すため、どの検出器の基底でも一部の誤りがハイパーエッジになる。2 つの基底で復号して重みの小さい方を採る）。$d$ が大きいと失敗する故障の割合は急速に減る。'''),
-    code(r'''def single_fault_scan(d, n_sample=None, seed=1):
-    ex = D4Experiment(d, d, d, d, NoiseModel(1e-3))
-    comp = ex.comp
-    blk_of = np.zeros(comp.n_loc, dtype=int)
-    for bi, b in enumerate(comp.blocks):
-        for cm in b['moms']:
-            a, bb = cm.loc_slice
-            blk_of[a:bb] = bi
-    r_ = np.random.default_rng(seed)
-    faults = []
-    for i in range(comp.n_loc):
-        k, qs = comp.loc_kind[i], comp.loc_q[i]
-        faults += [(i, ps) for ps in (['X'] if k == 0 else ['Z'] if k == 1 else PAULI_CHOICES[len(qs)])]
-    if n_sample:
-        faults = [faults[j] for j in r_.choice(len(faults), n_sample, replace=False)]
-    fails = {}
-    for i, ps in faults:
-        inf, _ = ex.shot(r_, forced={i: ps})
-        if inf > 0:
-            nm = comp.blocks[blk_of[i]]['name']
-            fails[str(nm)] = fails.get(str(nm), 0) + 1
-    return len(faults), fails
-t0 = time.time()
-for d, ns in [(3, None), (5, 1500 if QUICK else 6000)]:
-    n, fails = single_fault_scan(d, ns)
-    info(f'N5 d={d}: single faults that lead to a logical failure ({"all" if ns is None else "random sample of"} {n} faults)',
-         f'{sum(fails.values())} / {n} = {sum(fails.values()) / n:.2e}; by block: {fails}')
-print('%.0f s' % (time.time() - t0))'''),
+    md(r'''## N5. 1 個の故障（INFO：故障の網羅範囲と失敗の記録。合否ではなく、耐故障性を保証するものでもない）
+距離 $d\ge3$ で耐故障な回路と復号器なら、1 個の故障は必ず訂正される。本研究の回路・復号器（[Dav] の JIT decoder は参照できず独自に構成）で、1 個の故障を強制し（他の雑音は 0）出力が誤るかを調べる（`single_fault_scan`）。
+* **網羅範囲**：コンパイルした回路の全ての雑音位置（ゲート、CCZ・CS・$T^\dagger$、初期化、測定、アイドル）× その雑音チャネルの全ての Pauli、さらに switch-out の**動的な故障**（測定結果に応じて適用される各補正 CZ の後の 15 通りの Pauli、補正 CZ 層のアイドル）。古典処理は雑音なし。
+* **測定分岐**：各故障を 2 つの測定乱数の種で実行する（ランダムな測定結果、したがって分岐が変わる）。どちらかで誤れば「失敗あり」。失敗しなかった故障が**全分岐で**訂正されるとは言えない。
+* **一次の係数**：$c_1=\sum_f (P(f)/p)\,\overline{\varepsilon}(f)$（$P(f)$ はその故障の確率：1 量子ビット脱分極の各 Pauli $p/3$、2 量子ビット $p/15$、3 量子ビット $p/63$、反転 $p$、アイドルは $p_{\rm idle}/3$；$\overline\varepsilon$ は 2 つの種の不忠実度の平均）。小さい $p$ で $\varepsilon_K\approx c_1p$（この復号器での単一故障の寄与）。件数の比とは異なる。
+* 窓（`D4Experiment.window`：D4 相最後のラウンド〜FSC の最初のラウンド）の内外に分けて記録する。窓の外の失敗（例えば D4 相のより前のラウンド）も数える。
+失敗の原因は、少なくとも (i) D4 相最後のラウンドの CCZ ガジェット内の故障（CZ のドレッシングによる非 Pauli な効果を charge 復号器の誤りモデルが含まない）、(ii) switch-out の時間境界での検出器の基底（どの基底でも一部の誤りがハイパーエッジ）、(iii) $U$ 直前の $Z$ ラウンドの後に起きて $U$ を通る $X$ 誤り（その時点で検出できない）を含む。原因を復号器・測定ガジェット・順序・境界のどれに帰すべきかの完全な分類はしていない（未解決）。'''),
+    code(r'''t0 = time.time()
+N5 = {}
+for d, pi, ns in [(3, 1.0, None), (3, 0.0, None), (5, 1.0, 1500 if QUICK else 6000)]:
+    ex = D4Experiment(d, d, d, d, NoiseModel(1e-3, p_idle=pi * 1e-3))
+    r = single_fault_scan(ex, n_sample=ns, seeds=2)
+    N5[(d, pi)] = r
+    info(f'N5 d={d}, scenario {"A" if pi else "B"}: single faults ({"all" if ns is None else "random sample of"} '
+         f'{r["n_tested"]} of {r["n_faults_total"]}, incl. dynamic switch-out faults, 2 seeds)',
+         f'failing {r["n_fail"]} (window {r["n_fail_window"]}, outside {r["n_fail_outside"]}); first-order coefficient '
+         f'c1 = {r["c1"]:.2f} (window {r["c1_window"]:.2f}, outside {r["c1_outside"]:.2f}); by block {r["by_block"]}')
+dyn = [f for f in N5[(3, 1.0)]['failures'] if f['fault'].startswith("('SO")]
+print('failing dynamic switch-out faults at d=3 (A):', len(dyn))
+print('%.0f s' % (time.time() - t0))
+pd.DataFrame(N5[(3, 1.0)]['failures'][:30])'''),
+    md(r'''## N9. switch-out の物理スケジュール
+switch-out の補正 $\mathrm{CZ}(\Gamma(a))$ は、全ての $S^g_v$ の CZ 対の和集合の辺彩色による**固定の層スケジュール**で適用する（層数は測定結果によらない最悪値で、時間の計数に使う）。(i) 各層で同じ量子ビットを 2 回使わない、(ii) どの $\kappa$ でも適用される CZ が $\prod_{v\in\kappa}S^g_v$ の CZ 部分（同じ対が偶数回なら相殺）と一致する、(iii) 時間の計数 `block_steps` が $g$ の読み出し 1 ＋層数であること、を確認する。'''),
+    code(r'''for d in (3, 5, 7, 9):
+    circ = D4SwitchingCircuit(d, 1, 1, 1)
+    ok = True
+    layers = {}
+    for pr, c_ in circ.so_colour.items():
+        layers.setdefault(c_, []).append(pr)
+    for c_, prs in layers.items():
+        qs = [q for pr in prs for q in pr]
+        ok &= len(qs) == len(set(qs))
+    r_ = np.random.default_rng(d)
+    for _ in range(20):
+        kap = r_.integers(0, 2, len(circ.gens_g))
+        want = {}
+        for v in np.nonzero(kap)[0]:
+            for pr in circ.gpairs[v]:
+                pr = tuple(sorted(pr)); want[pr] = want.get(pr, 0) ^ 1
+        want = {pr for pr, c_ in want.items() if c_}
+        ok &= want <= set(circ.so_colour)
+    so = [b for b in circ.blocks if b['name'][0] == 'SO'][0]
+    ok &= block_steps(circ, so) == 1 + len(layers)
+    record(f'N9 d={d}: switch-out CZ schedule valid (no qubit used twice per layer, covers every kappa), '
+           f'time = readout + {len(layers)} CZ layer(s)', ok, f'{len(circ.so_colour)} distinct CZ pairs')'''),
     md(r'''## N6. Litinski（2019）の誤り予算の再実装
 公開コード（github.com/litinski/magicstates、Apache-2.0）は実行せずに読んで再実装した（`msd_noisy_lib`）。そのノートブックに保存されている出力（15-to-1 の 1 段 4 件、(15-to-1)×(15-to-1) の 2 段 4 件）を、出力誤り（有効数字 2 桁）・量子ビット数・code cycle 数（小数 1 桁）で再現することを確認する（128 ビット演算）。'''),
     code(r'''LIT_PUBLISHED = [  # (args, output error, qubits, code cycles) as printed in Python/magicstates.ipynb
@@ -825,7 +864,11 @@ print(f'{n_pass} PASS, {n_fail} FAIL, {len(VAL) - n_pass - n_fail} INFO')
 json.dump(dict(notebook='validation', results=VAL,
                not_verified=['Knill-Laflamme distance of the D4 phase for L >= 6 (L >= 7 with FULL_KL=True)',
                              'exact (state-vector) simulation of the noisy protocol for L >= 3 (N3 is L = 1, 2; for L >= 3 the Pauli-proxy method is justified by the conditions of N1 and Takada et al.)',
-                             'optimality of the decoders (our own construction; single faults not always corrected, N5)',
+                             'N3b replaces S0 by its ideal output (S0 is Clifford and exact in stim, but its exact state vector does not fit in memory)',
+                             'N1 is a finite-size algebraic check (L = 2..7, 9), not a proof for general L',
+                             'fault tolerance: single faults are NOT always corrected by our circuit + decoders (N5); only the sampled measurement branches are tested',
+                             'causes of the single-fault failures not fully classified (decoder vs gadget vs ordering vs boundary)',
+                             'feed-forward X corrections are applied as a noiseless, zero-time Pauli layer (idealisation)',
                              'constants of the O(d) round counts (kappa)',
                              'FSC -> standard rotated-patch conversion',
                              'stabilizer-level layout of the Z_m (x) Y_0 twist-based seam (O(d) measurement qubits not counted)',
@@ -835,8 +878,9 @@ json.dump(dict(notebook='validation', results=VAL,
 pd.DataFrame([(k, v['status']) for k, v in VAL.items()], columns=['check', 'status'])'''),
     md(r'''### 検証できていない事項（正しさが確認されたものとして扱わない）
 * $L\ge 6$ の D4 相の Knill–Laflamme 距離（$L\le5$ は V5b で厳密に $=L$）。
-* $L\ge3$ での雑音付きプロトコルの状態ベクトルによる直接照合（N3 は $L=1,2$。$L\ge3$ の Pauli proxy 法の正しさは N1 の条件と Takada らの定理に依拠）。
-* 復号器の最適性（本研究の構成。N5 のとおり 1 個の故障を必ずしも訂正しない）。したがって $\varepsilon_K$ は最適な復号で達成できる値より大きい（保守的）。
+* $L\ge3$ での雑音付きプロトコルの状態ベクトルによる直接照合（N3 は $L\le2$。$L\ge3$ の Pauli proxy 法の正しさは N1 の有限サイズの条件確認と Takada らの定理に依拠）。N3b は S0 を理想出力で置き換えている。
+* 耐故障性：本研究の回路・復号器は 1 個の故障を必ずしも訂正しない（N5）。N5 は 2 つの測定分岐しか試していない。失敗の原因（復号器・測定ガジェット・順序・境界）の完全な分類はしていない。
+* フィードフォワードの $X$ 補正は雑音なし・時間 0 の Pauli 層として適用する理想化。
 * $O(d)$ ラウンドの定数 $\kappa$、FSC → 通常の回転表面符号パッチへの変換。
 * Fig. 17c の継ぎ目（$Z_m\otimes Y_0$ の twist）の安定化子レベルの配置、GoSC 配置の誤り予算（Litinski 2019 の方法を本研究で GoSC の形に当てはめたもの。回路レベルのシミュレーションではない）。
 * 古典処理の待ち時間。

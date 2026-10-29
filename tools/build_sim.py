@@ -64,37 +64,59 @@ for d in D_LIST:
     circ = D4SwitchingCircuit(d, *R_)
     comp = CompiledProtocol(circ, NoiseModel(1.0, p_idle=1.0))
     blocks = {}
-    for b in comp.blocks:
-        blocks[b['name'][0]] = blocks.get(b['name'][0], 0) + len(b['moms'])
-    rows.append(dict(d=d, qubits=circ.nq, data=circ.nd, time_steps=sum(blocks.values()),
+    for b in circ.blocks:
+        blocks[b['name'][0]] = blocks.get(b['name'][0], 0) + block_steps(circ, b)
+    rows.append(dict(d=d, qubits=circ.nq, data=circ.nd, time_steps=sum(v for k, v in blocks.items() if k != 'FIN'),
                      **{f'steps_{k}': v for k, v in blocks.items()}, noise_locations=comp.n_loc))
 pd.DataFrame(rows)
 '''),
     md(r'''
 ## 3. モンテカルロ（Kobayashi 方式）
-1 ショット：誤りを雑音モデルからサンプルし、Pauli proxy 回路（`FastShot`）を stim の `TableauSimulator` で実行する。各ラウンドの後に flux 復号器（`FluxDecoder`）が補正を決め、物理的に適用する（即時フィードフォワード）。最後に charge 復号器（`ChargeDecoder`）の予測と、雑音なしの最終ラウンド後の $\bar H$ の期待値から不忠実度（0, 1/2, 1 のいずれか）を得る。
-結果は塊（chunk）ごとに CSV に追記する（途中で止めても集計できる）。
+1 ショット：誤りを雑音モデルからサンプルし、Pauli proxy 回路（`FastShot`）を stim の `TableauSimulator` で実行する。各ラウンドの後に flux 復号器（`FluxDecoder`）が補正を決めて適用する（即時フィードフォワード；補正の $X$ は雑音なし・時間 0 の Pauli 層として適用する理想化）。switch-out では $g$ の読み出しを復号し、補正 CZ を固定の層スケジュールで、各 CZ の後に 2 量子ビット脱分極、他の量子ビットにアイドル雑音を入れて適用する。最後に charge 復号器（`ChargeDecoder`）の予測と、雑音なしの最終ラウンド後の $\bar H$ の期待値から不忠実度（0, 1/2, 1 のいずれか）を得る。
+**保存と再開**：各 worker が chunk（ショットの塊）ごとに CSV に 1 行追記する（ロックで排他）。各行に `run_id`（この実行の識別子）、`point_id`（条件）、`chunk_id`、`seed` を記録する。`RESUME = True` で同じ `MC_CSV` に追記して再開すると、各条件の残りの時間・失敗数の予算だけ実行し、乱数の種は chunk 番号から決めるので重複しない。
 '''),
     code(r'''
-import time, multiprocessing as mp_
+import time, uuid, datetime, multiprocessing as mp_
+RESUME = False
+RUN_ID = ('quick' if QUICK else 'production') + '-' + datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid.uuid4().hex[:6]
+print('run_id =', RUN_ID)
 
-def run_point(pt, seed):
+def point_id(pt):
+    k = pt['kappa']
+    return f"{pt['scenario']}|{'quiet' if pt.get('quiet') else 'noisy'}|d{pt['d']}|p{pt['p']:g}|pi{pt['p_idle']:g}|k{k[0]:g},{k[1]:g},{k[2]:g}"
+
+if not RESUME and os.path.exists(MC_CSV):
+    os.remove(MC_CSV)
+done = pd.read_csv(MC_CSV) if os.path.exists(MC_CSV) else None
+_LOCK = mp_.Lock()
+
+def run_point(pt, base_seed):
     d, p = pt['d'], pt['p']
+    pid = point_id(pt)
     R_ = [max(1, int(np.ceil(k * d))) for k in pt['kappa']]
     ex = D4Experiment(d, *R_, NoiseModel(p, p_idle=pt['p_idle']), quiet_window=pt.get('quiet', False))
-    rng = np.random.default_rng(seed)
     chunk = 400 if d <= 5 else 100 if d == 7 else 40
-    out, t_start, nf = [], time.time(), 0
-    while time.time() - t_start < pt.get('time_cap', TIME_CAP) and nf < pt.get('max_fail', MAX_FAIL):
+    prev = done[done.point_id == pid] if done is not None else None
+    t_used = float(prev.seconds.sum()) if prev is not None else 0.0
+    nf = int(prev.n_fail.sum()) if prev is not None else 0
+    k = int(prev.chunk_id.max()) + 1 if prev is not None and len(prev) else 0
+    t_start = time.time()
+    while t_used + time.time() - t_start < pt.get('time_cap', TIME_CAP) and nf < pt.get('max_fail', MAX_FAIL):
         t0 = time.time()
-        inf, st = ex.run(chunk, rng)
+        seed = base_seed * 100003 + k
+        inf, st = ex.run(chunk, np.random.default_rng(seed))
         nf += int((inf > 0).sum())
-        out.append(dict(scenario=pt['scenario'], window='quiet' if pt.get('quiet') else 'noisy', d=d, p=p, p_idle=pt['p_idle'], kappa0=pt['kappa'][0],
-                        kappa_in=pt['kappa'][1], kappa_out=pt['kappa'][2], R0=R_[0], Rin=R_[1], Rout=R_[2],
-                        shots=chunk, sum_infidelity=float(inf.sum()), n_fail=int((inf > 0).sum()),
-                        n_half=int((inf == 0.5).sum()), mean_errors=float(np.mean([s['n_err'] for s in st])),
-                        seconds=time.time() - t0))
-    return out
+        row = dict(run_id=RUN_ID, point_id=pid, chunk_id=k, seed=seed, scenario=pt['scenario'],
+                   window='quiet' if pt.get('quiet') else 'noisy', d=d, p=p, p_idle=pt['p_idle'],
+                   kappa0=pt['kappa'][0], kappa_in=pt['kappa'][1], kappa_out=pt['kappa'][2], R0=R_[0], Rin=R_[1],
+                   Rout=R_[2], shots=chunk, sum_infidelity=float(inf.sum()), n_fail=int((inf > 0).sum()),
+                   n_half=int((inf == 0.5).sum()), mean_errors=float(np.mean([s['n_err'] for s in st])),
+                   mean_so_cz=float(np.mean([s['so_cz'] for s in st])), seconds=time.time() - t0)
+        with _LOCK:
+            new = not os.path.exists(MC_CSV)
+            pd.DataFrame([row]).to_csv(MC_CSV, mode='a', header=new, index=False)
+        k += 1
+    return pid
 
 def _worker(args):
     return run_point(*args)
@@ -103,12 +125,13 @@ t0 = time.time()
 tasks = [(pt, SEED + 17 * i) for i, pt in enumerate(POINTS)]
 if WORKERS > 1:
     with mp_.get_context('fork').Pool(WORKERS) as pool:
-        res = pool.map(_worker, tasks, chunksize=1)
+        for pid in pool.imap_unordered(_worker, tasks, chunksize=1):
+            print('done', pid, '%.0f s' % (time.time() - t0), flush=True)
 else:
-    res = [_worker(t) for t in tasks]
-mc = pd.DataFrame([r for rr in res for r in rr])
-mc.to_csv(MC_CSV, index=False)
-print('wrote', MC_CSV, len(mc), 'chunks, %.0f s' % (time.time() - t0))
+    for t in tasks:
+        print('done', _worker(t), flush=True)
+mc = pd.read_csv(MC_CSV)
+print(MC_CSV, len(mc), 'chunks,', mc.shots.sum(), 'shots, run_id(s):', sorted(mc.run_id.unique()))
 '''),
     md(r'''
 ## 4. 表面符号の論理誤り率の較正（Litinski 側の $p_L$）
@@ -129,7 +152,7 @@ for scen, f in SCENARIOS.items():
                 PL = float(np.mean(m.decode_batch(det)[:, 0] != obs[:, 0]))
                 o[basis] = PL
                 tot += (1 - (1 - 2 * PL) ** (1 / (3 * d))) / 2
-            rows.append(dict(scenario=scen, d=d, p=p, p_idle=f * p, shots=shots, rounds=3 * d,
+            rows.append(dict(run_id=RUN_ID, scenario=scen, d=d, p=p, p_idle=f * p, shots=shots, rounds=3 * d,
                              PL_x=o['x'], PL_z=o['z'], pL_per_round=tot))
 cal = pd.DataFrame(rows)
 cal.to_csv(CAL_CSV, index=False)
@@ -141,7 +164,7 @@ cal
 不忠実度の推定値 $\hat\varepsilon_K$ と標準誤差（ショットごとの値 0, 1/2, 1 の平均と標準誤差）。
 '''),
     code(r'''
-g = mc.groupby(['window', 'scenario', 'd', 'p', 'kappa_in']).agg(shots=('shots', 'sum'), s=('sum_infidelity', 'sum'),
+g = mc.groupby(['window', 'scenario', 'd', 'p', 'p_idle', 'kappa0', 'kappa_in', 'kappa_out']).agg(shots=('shots', 'sum'), s=('sum_infidelity', 'sum'),
                                                        n_fail=('n_fail', 'sum'), n_half=('n_half', 'sum')).reset_index()
 g['eps'] = g.s / g.shots
 n_one = g.n_fail - g.n_half                      # shots with infidelity 1 (the others have 1/2)

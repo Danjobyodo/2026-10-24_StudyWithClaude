@@ -15,6 +15,7 @@ All Clifford gates, sampled Pauli errors and inserted dressings are executed by 
 Requires (as globals, embedded before this code): numpy as np, stim, common_lib, d4_lib.
 """
 import itertools
+import zlib
 import numpy as np
 
 # ------------------------------------------------------------------ gate algebra
@@ -182,6 +183,21 @@ class D4SwitchingCircuit:
         self.Sg = Sg
         self.Gamma = left_inverse_T(Sg)
         self.gpairs = [[(c[i], c[j]) for (i, j) in op.quad if i in c and j in c] for lab, op in self.gens_g]
+        # physical switch-out correction CZ(Gamma(a_dec)) ([KZH] step 4): the CZ pairs of the selected S^g
+        # (pairs occurring an even number of times cancel) are applied in a FIXED schedule: a greedy edge
+        # colouring of the union of all pairs; colour l = time step l.  The number of steps does not depend
+        # on the outcome (worst case, used for the time count); empty steps are still idle steps.
+        allpairs = sorted({tuple(sorted(pr)) for prs in self.gpairs for pr in prs})
+        colour, used = {}, {}
+        for pr in allpairs:
+            k = 0
+            while any(k in used.get(q, ()) for q in pr):
+                k += 1
+            colour[pr] = k
+            for q in pr:
+                used.setdefault(q, set()).add(k)
+        self.so_colour = colour
+        self.so_steps = 1 + (max(colour.values()) + 1 if colour else 0)    # g readout + CZ layers
         self.network = [('NCCZ', self.data_g[e], i, j)
                         for v in range(len(self.gens_g)) for e in np.nonzero(self.Gamma[v])[0]
                         for (i, j) in self.gpairs[v]]
@@ -570,6 +586,8 @@ class CompiledProtocol:
                 cm.nonc = nc
                 touched = {q for op in mom for q in op[1:]}
                 idle = [q for q in blk['data'] if q not in touched] + [q for q in live if q not in touched]
+                if all(op[0] in ('NCCZ', 'FLIPX') for op in mom):
+                    idle = []          # virtual moment of the deferred switch-out (no physical time step)
                 ml = [] if blk.get('noiseless') else noise.locations(mom, idle)
                 s0 = len(locs)
                 locs += ml
@@ -1260,18 +1278,28 @@ class D4Experiment:
         # decoders fail to correct are located (validation N5).  Gives an optimistic bound.  The decoders keep
         # the priors of the full noise model (they are built before the window is silenced).
         self.quiet_window = quiet_window
+        win = {('S1', Rin, 'z'), ('S1', Rin, 'x'), ('U',), ('SO',), ('S4', 1)}
+        win |= {('S1', r, 'z') for r in range(Rin + 1, Rin + 1 + n_pre_u)}
+        self.window = win
         if quiet_window:
-            win = {('S1', Rin, 'z'), ('S1', Rin, 'x'), ('U',), ('SO',), ('S4', 1)}
-            win |= {('S1', r, 'z') for r in range(Rin + 1, Rin + 1 + n_pre_u)}
             for blk in self.comp.blocks:
                 if blk['name'] in win:
                     a, b = blk['moms'][0].loc_slice[0], blk['moms'][-1].loc_slice[1]
                     self.comp.loc_p[a:b] = 0.0
         self.gset = set(self.circ.data_g)
 
-    def shot(self, rng, decode=True, forced=None):
+    def shot(self, rng, decode=True, forced=None, ts=None, init=None):
+        """One Monte Carlo shot.  forced: {location index or dynamic fault id: Pauli string} = single-fault
+        injection (all other noise off); dynamic fault ids are ('SOCZ', i, j) (after the physical switch-out
+        CZ on i, j, if it is applied in this shot) and ('SOIDLE', layer, q).  ts: TrueSim run in lockstep
+        (validation only; then the returned stats contain the lockstep record)."""
         circ, comp, fl = self.circ, self.comp, self.flux
-        sh = FastShot(comp, rng, forced)
+        fstatic = {k: v for k, v in forced.items() if not isinstance(k, tuple)} if forced is not None else None
+        fdyn = {k: v for k, v in forced.items() if isinstance(k, tuple)} if forced is not None else None
+        sh = FastShot(comp, rng, fstatic)
+        if init is not None:
+            init(sh)               # validation: prepared initial state (see lockstep_full)
+        lock = []
         fl.start()
         outs = []
         kfr = 0
@@ -1286,7 +1314,16 @@ class D4Experiment:
             nm = blk['name']
             if nm == ('S1', 1, 'z'):
                 sh.init_frame(circ.zchecks['FSC'], circ.data_rb)
-            res = sh.run_block(bi)
+            if init is not None and nm[0] == 'S0':
+                # validation start (lockstep_full): S0 replaced by the prepared state; its (noiseless,
+                # ideal) outcomes are all 0
+                res = [(q, bb, 0) for cm in comp.blocks[bi]['moms'] for (q, bb) in cm.meas]
+            elif ts is None:
+                res = sh.run_block(bi)
+            else:
+                r5 = sh.run_block_lockstep(bi, ts, rng)
+                lock += r5
+                res = [(q, bb, o) for q, bb, o, pk, pr in r5]
             outs += [o for (_, _, o) in res]
             if bi == last_S1x:
                 gl = {circ.lab_of[('D4', q)]: o for (q, b, o) in res if b == 'X'}
@@ -1306,6 +1343,9 @@ class D4Experiment:
                         # the flux was present during the X-type round preceding this Z round
                         flux_events += [(q, nm[1] - 1) for q in corr if nm[1] >= 2]
                     sh.apply_x(corr)
+                    if ts is not None:
+                        for q in corr:
+                            ts.X(q)
                     for q in corr:
                         fl.register_correction(q, code)
                     stats['n_corr'] += len(corr)
@@ -1314,24 +1354,30 @@ class D4Experiment:
                 fl.push_round(kfr, readout=readout)
                 kfr += 1
                 a_dec = dict(readout)
+                phys = []
                 if decode:
-                    phys = []
                     for q, k in fl.decode(flush=True):
                         if q in self.gset:
                             a_dec[q] ^= 1
                         else:
                             phys.append(q)
-                    sh.apply_x(phys)
                     for q in phys:
                         fl.register_correction(q, 'FSC')
                     stats['n_corr'] += len(phys)
-                self._switch_out_fix(sh, readout, a_dec, rng, noisy=forced is None and not self.quiet_window)
+                stats['so_cz'] = self._switch_out(sh, readout, a_dec, phys, rng, fdyn,
+                                                  noisy=forced is None and not self.quiet_window, ts=ts)
         # Pauli frame of the S^g eigenvalues (last S1 round), then the logical Clifford stabilizer
         for v, m in enumerate(m_g_last):
             if m:
                 for q in circ.frame_strings[v]:
                     sh.sim.z(q)
+                    if ts is not None:
+                        ts.Z(q)
         val = sh.sim.peek_observable_expectation(circ.logical_proxy(sh.fx))
+        if ts is not None:
+            stats['lockstep'] = lock
+            stats['H_true'] = ts.expect_logical(circ)
+            stats['H_proxy'] = val
         if decode:
             sols = [ch.predict(outs, ch.flux_erasures(flux_events) if self.flux_informed else None)
                     for ch in self.charges]
@@ -1342,24 +1388,68 @@ class D4Experiment:
         stats['n_dress'] = sh.n_dress
         return (1 - val) / 2, stats
 
-    def _switch_out_fix(self, sh, readout, a_dec, rng, noisy=True):
-        """kappa = Gamma(a): the virtual network applied CZ(Gamma(a_raw)); the protocol applies
-        CZ(Gamma(a_dec)) physically -> add the difference (Clifford) and the noise of the physical CZs."""
-        circ = self.circ
+    def _switch_out(self, sh, readout, a_dec, phys, rng, fdyn=None, noisy=True, ts=None):
+        """Physical switch-out after the Z^g readout ([KZH] step 4), in the order of the real protocol:
+        (1) remove the virtual correction CZ(Gamma(a_raw)) of the deferred-measurement network (noiseless
+            Clifford bookkeeping of the simulation, no physical operation);
+        (2) the X corrections decided by the flux decoder (applied as a noiseless Pauli layer, like all
+            feed-forward X corrections of this simulation);
+        (3) the physical CZ(Gamma(a_dec)) in the fixed schedule circ.so_colour: in every layer each CZ is
+            followed by DEPOLARIZE2(p) and every other rb data qubit by DEPOLARIZE1(p_idle) (exact Pauli
+            propagation through the later layers, because they are applied in order).
+        fdyn: forced dynamic faults (single-fault injection).  Returns the number of physical CZs."""
+        circ, sim = self.circ, sh.sim
         ar = np.array([readout[q] for q in circ.data_g], dtype=np.uint8)
         ad = np.array([a_dec[q] for q in circ.data_g], dtype=np.uint8)
         kr = (circ.Gamma.astype(int) @ ar) % 2
         kd = (circ.Gamma.astype(int) @ ad) % 2
-        p = self.noise.p
-        for v in range(len(circ.gens_g)):
-            if kr[v] ^ kd[v]:
-                for (i, j) in circ.gpairs[v]:
-                    sh.sim.cz(i, j)
-            if kd[v] and p > 0 and noisy:
-                for (i, j) in circ.gpairs[v]:
-                    if rng.random() < p:
-                        ps = PAULI_CHOICES[2][rng.integers(15)]
-                        sh._pauli(ps, (i, j))
+
+        def pairs_of(k):
+            cnt = {}
+            for v in np.nonzero(k)[0]:
+                for pr in circ.gpairs[v]:
+                    pr = tuple(sorted(pr))
+                    cnt[pr] = cnt.get(pr, 0) ^ 1
+            return sorted(pr for pr, c in cnt.items() if c)
+
+        def pauli(ps, qs):
+            sh._pauli(ps, qs)
+            if ts is not None:
+                for pc, q in zip(ps, qs):
+                    if pc != 'I':
+                        getattr(ts, pc)(q)
+
+        def cz(i, j):
+            sim.cz(i, j)
+            if ts is not None:
+                ts.diag((i, j), lambda x: 4 * x[0] * x[1])
+        for (i, j) in pairs_of(kr):                       # (1)
+            cz(i, j)
+        sh.apply_x(phys)                                  # (2)
+        if ts is not None:
+            for q in phys:
+                ts.X(q)
+        gates = pairs_of(kd)                              # (3)
+        nl = circ.so_steps - 1
+        p, pi = self.noise.p, self.noise.p_idle
+        for layer in range(nl):
+            here = [pr for pr in gates if circ.so_colour[pr] == layer]
+            busy = {q for pr in here for q in pr}
+            for (i, j) in here:
+                cz(i, j)
+            for (i, j) in here:
+                if noisy and p > 0 and rng.random() < p:
+                    pauli(PAULI_CHOICES[2][rng.integers(15)], (i, j))
+                if fdyn and ('SOCZ', i, j) in fdyn:
+                    pauli(fdyn[('SOCZ', i, j)], (i, j))
+            for q in circ.data_rb:
+                if q in busy:
+                    continue
+                if noisy and pi > 0 and rng.random() < pi:
+                    pauli('XYZ'[rng.integers(3)], (q,))
+                if fdyn and ('SOIDLE', layer, q) in fdyn:
+                    pauli(fdyn[('SOIDLE', layer, q)], (q,))
+        return len(gates)
 
     def run(self, shots, rng, decode=True):
         inf = np.zeros(shots)
@@ -1371,6 +1461,18 @@ class D4Experiment:
 
 
 # ------------------------------------------------------------------ applicability of Takada et al.
+def equal_up_to_phase(A, B, tol=1e-12):
+    """True iff A = e^{i phi} B for one global phase (exact operator comparison, NOT elementwise |.|)."""
+    A, B = np.asarray(A, complex), np.asarray(B, complex)
+    if A.shape != B.shape:
+        return False
+    k = np.unravel_index(np.argmax(np.abs(B)), B.shape)
+    if abs(B[k]) < tol:
+        return bool(np.allclose(A, 0, atol=tol))
+    ph = A[k] / B[k]
+    return bool(abs(abs(ph) - 1) < 1e-9 and np.allclose(A, ph * B, atol=1e-9))
+
+
 def takada_conditions(L):
     """Algebraic checks of the sufficient conditions of Takada et al. (Definition 2 and Sec. VIII) for
     the D4 code switching protocol on the L x L lattice.  Returns dict name -> (passed, detail)."""
@@ -1390,11 +1492,16 @@ def takada_conditions(L):
     CZm = np.diag([1, 1, 1, -1]); Sm = np.diag([1, 1j])
     ok = True
     for E in (X, Y):
-        D = np.kron(E, I2) @ CZm @ np.kron(E, I2).conj().T @ CZm.conj().T       # [E_1, CZ]
-        ok &= np.allclose(np.abs(D), np.abs(np.kron(I2, Zm)))
-        D1 = E @ Sm @ E.conj().T @ Sm.conj().T
-        ok &= np.allclose(np.abs(D1), np.abs(Zm))
-    res['dressings of CZ / S by X, Y are single-qubit Z (dressing axis Z on every qubit)'] = (bool(ok), '')
+        for k in (0, 1):                                                   # error on either qubit of the CZ
+            Ek = np.kron(E, I2) if k == 0 else np.kron(I2, E)
+            D = Ek @ CZm @ Ek.conj().T @ CZm.conj().T                          # group commutator [E, CZ]
+            ok &= equal_up_to_phase(D, np.kron(I2, Zm) if k == 0 else np.kron(Zm, I2))
+        D1 = E @ Sm @ E.conj().T @ Sm.conj().T                                 # [E, S]
+        ok &= equal_up_to_phase(D1, Zm)
+    for E in (Zm,):                                                        # Z errors commute: no dressing
+        ok &= equal_up_to_phase(np.kron(E, I2) @ CZm @ np.kron(E, I2).conj().T @ CZm.conj().T, np.eye(4))
+    res['dressings of CZ / S by X, Y are single-qubit Z on the partner / same qubit (exact up to a global '
+        'phase); Z errors give no dressing'] = (bool(ok), '')
     # (c) effective commutation: group commutators of measured generators are Z-type Paulis in the
     #     persistent Z-stabilizer span (D4 Z checks), Eq. (58) / Lemma 1
     HZr, HZp = f2_rref(d4.HZ)
@@ -1557,3 +1664,136 @@ def lockstep_validation(L, Rin, Rout, noise, rng, sequential=False, corr_prob=0.
     proxy = sh.sim.peek_observable_expectation(circ.logical_proxy(sh.fx))
     return dict(n_meas=nmeas, n_random=nrand, n_mismatch=int(nbad), H_true=true, H_proxy=proxy,
                 n_dress=sh.n_dress, agree=bool(nbad == 0 and abs(true - proxy) < 1e-9))
+
+
+def lockstep_full(L, Rin, Rout, noise, rng, ex=None):
+    """Validation of the adaptive protocol AS USED IN PRODUCTION (D4Experiment.shot, from S1 on): real-time
+    flux decoding with X corrections, the switch-out with the decoded readout and the physical CZ layers
+    with their noise, the Pauli frame and the charge decoder, run in lockstep on the Pauli-proxy circuit
+    (stim) and on the exact sparse state vector of the TRUE non-Clifford circuit (TrueSim), with the same
+    sampled errors and outcomes.  S0 (a Clifford circuit, simulated exactly by stim alone) is replaced by
+    its ideal output E|+_L>_FSC|0>_g with a random 2-qubit Pauli E on the FSC data (noiseless S0 outcomes
+    for the decoders; the exact state vector of S0's many parallel ancillas does not fit in memory).  Checks every measurement (proxy
+    deterministic <-> exact probability 1, proxy random <-> exact 1/2) and the final <H> before the
+    charge-decoder correction."""
+    ex = ex or D4Experiment(L, 1, Rin, Rout, noise)
+    circ = ex.circ
+    P, c, fsc = circ.P, circ.c, circ.P.fsc
+    zero = coset_state(fsc, set())
+    one = coset_state(fsc, set(int(q) for q in np.nonzero(fsc.t_log)[0]))
+    amps = {}
+    for st_ in (zero, one):
+        for k, v in st_.a.items():
+            amps[k] = amps.get(k, 0) + v / np.sqrt(2)
+    ts = TrueSim(circ.nd, [sum(1 << c[q] for q in k) for k in amps], list(amps.values()))
+    n = circ.nq
+    errs = [('XYZ'[rng.integers(3)], int(q)) for q in rng.choice(circ.data_rb, 2, replace=False)]
+
+    def init(sh):
+        stabs = []
+        for lab, xs, quad in circ.xgens['FSC']:
+            ps = stim.PauliString(n)
+            for q in xs:
+                ps[q] = 'X'
+            stabs.append(ps)
+        for lab, qs in circ.zchecks['FSC']:
+            ps = stim.PauliString(n)
+            for q in qs:
+                ps[q] = 'Z'
+            stabs.append(ps)
+        ps = stim.PauliString(n)
+        for q in circ.t_log:
+            ps[q] = 'X'
+        stabs.append(ps)
+        for q in range(n):
+            if q not in circ.data_rb:
+                ps = stim.PauliString(n)
+                ps[q] = 'Z'
+                stabs.append(ps)
+        sh.sim.set_state_from_stabilizers(stabs, allow_redundant=True)
+        for pc, q in errs:
+            getattr(ts, pc)(q)
+            getattr(sh.sim, pc.lower())(q)
+    inf, st = ex.shot(rng, ts=ts, init=init)
+    nbad = nrand = 0
+    for q, bb, o, pk, pr in st['lockstep']:
+        if pk == 0:
+            nrand += 1
+            nbad += abs(pr - 0.5) > 1e-9
+        else:
+            nbad += (o != (0 if pk == 1 else 1)) or abs(pr - 1) > 1e-9
+    ht, hp = complex(st['H_true']), float(st['H_proxy'])
+    return dict(n_meas=len(st['lockstep']), n_random=nrand, n_mismatch=int(nbad), H_true=ht.real, H_proxy=hp,
+                n_err=st['n_err'], n_corr=st['n_corr'], so_cz=st['so_cz'], infidelity=float(inf),
+                agree=bool(nbad == 0 and abs(ht - hp) < 1e-9))
+
+
+def single_fault_scan(ex, n_sample=None, seeds=2, rng_seed=1, keep_failures=True):
+    """Single-fault injection over ALL noise locations of the protocol as simulated: every static
+    location of the compiled circuit (gates incl. CCZ / CS / T^dag, resets, measurements, idling) with
+    every Pauli of its channel, plus the dynamic switch-out faults (each Pauli after each possible physical
+    CZ, idle faults of the CZ layers).  All other noise is off.  Every fault is run with `seeds` different
+    measurement-randomness seeds (the outcomes of random measurements, hence the branches, differ); a
+    fault 'fails' if any seed gives a nonzero output infidelity.  Not covered: other branches than the
+    sampled ones.
+    Returns dict with the counts, the probability-weighted first-order coefficient
+        c1 = sum_f (P(f) / p) * mean_seeds(infidelity)      (eps ~ c1 p for small p, this decoder),
+    its split into the switching window (ex.window) and the rest, and (optionally) the failing faults."""
+    comp, circ, nz = ex.comp, ex.circ, ex.noise
+    p = nz.p
+    names = [b['name'] for b in comp.blocks]
+    blk_of = np.zeros(comp.n_loc, dtype=int)
+    for bi, b in enumerate(comp.blocks):
+        for cm in b['moms']:
+            a_, b_ = cm.loc_slice
+            blk_of[a_:b_] = bi
+    faults = []                                   # (fault id, pauli, weight P(f)/p, block name)
+    for i in range(comp.n_loc):
+        k, qs, pl = comp.loc_kind[i], comp.loc_q[i], comp.loc_p[i]
+        if pl == 0:
+            continue
+        chs = ['X'] if k == 0 else ['Z'] if k == 1 else PAULI_CHOICES[len(qs)]
+        for ps in chs:
+            faults.append((int(i), ps, pl / p / len(chs), names[blk_of[i]]))
+    for pr in circ.so_colour:
+        for ps in PAULI_CHOICES[2]:
+            faults.append((('SOCZ',) + pr, ps, 1 / 15, ('SO',)))
+    if nz.p_idle > 0:
+        for layer in range(circ.so_steps - 1):
+            for q in circ.data_rb:
+                for ps in 'XYZ':
+                    faults.append((('SOIDLE', layer, q), ps, nz.p_idle / p / 3, ('SO',)))
+    r_ = np.random.default_rng(rng_seed)
+    n_all = len(faults)
+    if n_sample and n_sample < n_all:
+        idx = r_.choice(n_all, n_sample, replace=False)
+        faults = [faults[j] for j in idx]
+        scale = n_all / n_sample                  # unbiased estimate of the full sum
+    else:
+        scale = 1.0
+    c1 = c1_win = 0.0
+    nfail = nfail_win = 0
+    by_block, fails = {}, []
+    for fid, ps, w, bn in faults:
+        infs = [ex.shot(np.random.default_rng((rng_seed, s_, zlib.crc32(str(fid).encode()))), forced={fid: ps})[0]
+                for s_ in range(seeds)]
+        m = float(np.mean(infs))
+        c1 += w * m * scale
+        inwin = bn in ex.window
+        if inwin:
+            c1_win += w * m * scale
+        if max(infs) > 0:
+            nfail += 1
+            nfail_win += inwin
+            by_block[str(bn)] = by_block.get(str(bn), 0) + 1
+            if keep_failures:
+                fails.append(dict(fault=str(fid), pauli=ps, block=str(bn), in_window=inwin, infidelities=infs))
+    return dict(n_faults_total=n_all, n_tested=len(faults), seeds=seeds, n_fail=nfail, n_fail_window=nfail_win,
+                n_fail_outside=nfail - nfail_win, by_block=by_block, c1=c1, c1_window=c1_win,
+                c1_outside=c1 - c1_win, failures=fails)
+
+
+def block_steps(circ, blk):
+    """Physical time steps of a block: the switch-out is the g readout plus the fixed CZ-layer schedule
+    (its simulation moments FLIPX / NCCZ / MZ0 are a deferred-measurement representation, not time)."""
+    return circ.so_steps if blk['name'][0] == 'SO' else len(blk['moms'])
