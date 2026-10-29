@@ -419,7 +419,10 @@ def gosc_225to1(p, d1, d2, plog=plog_gosc, move_tiles=5, backend='ld', level1=No
         S.append(st)
     ps2, eps = run_steps(S, out_qubit=4, backend=backend)
     qubits = 2 * (121 * d1 * d1 + 55 * d2 * d2)   # 11 level-1 blocks of 11 tiles + 55 level-2 tiles
-    cycles = 15 * d2 / (ps2 * ps1)                # a level-2 step is skipped when no level-1 state is ready
+    # GoSC Sec. 3.5: each of the 15 level-2 steps needs one level-1 output; when the level-1 block fails
+    # (probability 1 - ps1) that 225-to-1 step is skipped, so 15 steps take 15 / ps1 steps on average;
+    # 1 step = d2 cycles; the whole protocol is repeated 1 / ps2 times on average
+    cycles = (15 / ps1) * d2 / ps2
     return dict(protocol='GoSC 225-to-1 (176 tiles x 15 tau), d1=%d, d2=%d' % (d1, d2), eps=float(eps),
                 p_success=float(ps2), qubits=int(qubits), cycles=float(cycles), volume=float(qubits * cycles),
                 levels=2, d=d2, d1=d1, eps_level1=float(e1))

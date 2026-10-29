@@ -6,7 +6,7 @@ cells = [md(r'''
 
 `D4_noisy_simulation.ipynb`・`noisy_cost_comparison.ipynb` が使う構成要素が正しいことを、比較の計算とは**独立に**確認する。
 各検査は `record(名前, 合否, 詳細)` で記録し（数値を記録するだけで合否の無い項目は `INFO`）、最後に `results/validation.json` 1 個にまとめて保存する。
-第 1 部・第 2 部は v4 から引き継いだ雑音なしの検証、第 3 部は v5 で追加した雑音付きシミュレーションの検証。所要時間は CPU 1 コアで約 30 分。
+第 1 部・第 2 部は v4 から引き継いだ雑音なしの検証、第 3 部は v5 で追加した雑音付きシミュレーションの検証。所要時間は約 2 時間（`QUICK = False`；4 コアの計算機で他の計算と並行して実測。最も長いのは N1 の $L=9$ と N5 の窓の全列挙）。`QUICK = True` で大幅に短縮する。
 
 | ID | 内容 | 方法 |
 |---|---|---|
@@ -28,6 +28,7 @@ cells = [md(r'''
 | N3 | **Pauli proxy 回路（Clifford）と真の非 Clifford 回路の一致** | 同じ誤り・同じ補正で並走させ、全測定の確率と最終 $\langle\bar H\rangle$ を比較：(a) $L=1,2$、ランダムな $X$ 補正；(b) $L=2$、**本番と同じ適応処理**（flux 復号の補正、switch-out の復号済み読み出しと物理 CZ 層とその雑音、Pauli frame） |
 | N4 | 雑音なしで出力誤り 0（復号器込み） | $d=3,5,7$ |
 | N5 | 1 個の故障に対する結果（INFO：故障の網羅範囲と失敗の記録） | switch-out の動的な CZ・アイドルを含む全雑音位置×全 Pauli、各 2 つの測定乱数の種；$d=3$ 全列挙（A, B）、$d=5$ 抽出。確率で重み付けした一次の係数 $c_1$（$\varepsilon\approx c_1p$）を窓の内外に分けて記録 |
+| N10 | FSC の並列スケジュール（感度用） | 全検査を同時に測る 6 CNOT 層の順序が、stim のメモリ実験で雑音なしに決定的、回路レベルの距離 $\ge L$（X, Z 両基底） |
 | N9 | switch-out の物理スケジュール | 補正 CZ の層が正しい（同じ量子ビットを同時に使わない）、適用される CZ が $\prod_{v\in\kappa}S^g_v$ の CZ 部分（偶数回は相殺）と一致、時間の計数 |
 | N6 | Litinski（2019）の誤り予算の再実装が公開値を再現 | 公開ノートブックに保存された出力 8 件 |
 | N7 | 較正用の表面符号回路 | 雑音なしで検出器 0、回路レベルの距離 $=d$、1 ラウンド 6 時間ステップ |
@@ -825,6 +826,19 @@ switch-out の補正 $\mathrm{CZ}(\Gamma(a))$ は、全ての $S^g_v$ の CZ 対
     ok &= block_steps(circ, so) == 1 + len(layers)
     record(f'N9 d={d}: switch-out CZ schedule valid (no qubit used twice per layer, covers every kappa), '
            f'time = readout + {len(layers)} CZ layer(s)', ok, f'{len(circ.so_colour)} distinct CZ pairs')'''),
+    md(r'''## N10. FSC の並列スケジュール（費用の感度用）
+本番のシミュレーションは FSC の X 検査と Z 検査を順に測る 14 ステップのラウンドを使う。全検査を同時に測る 6 CNOT 層（初期化・測定と合わせて 8 ステップ；$\mathcal L_{rb}$ の重さ 6 の $X^rX^b$ 検査があるので 6 層が最小）の順序を探索し（`fsc_parallel_schedule`）、stim のメモリ実験（X 基底・Z 基底）で、雑音なしで全ての検出器と論理観測量が決定的であること、CNOT の後の 2 量子ビット脱分極を含む回路レベルの最短の論理誤りが $L$ 以上であること（フック誤りで距離が下がらないこと）を確認する。この順序は比較ノートの時間の感度（`*_fsc8`）に使う。'''),
+    code(r'''for L in (3, 5, 7):
+    t0 = time.time()
+    P_ = D4Protocol(L)
+    sch = fsc_parallel_schedule(P_)
+    ok = True
+    for basis in 'XZ':
+        s0 = fsc_memory_circuit(P_, sch, basis, 3, 0.0).compile_detector_sampler(seed=2).sample(50, append_observables=True)
+        dd = len(fsc_memory_circuit(P_, sch, basis, L, 1e-3).detector_error_model(decompose_errors=True).shortest_graphlike_error())
+        ok &= (not s0.any()) and dd >= L
+    record(f'N10 L={L}: parallel FSC schedule ({sch["T"]} CNOT layers) deterministic, circuit distance >= L in both bases',
+           ok, f'distances {sch["distance"]}, search seed {sch["seed"]}, {time.time() - t0:.0f}s')'''),
     md(r'''## N6. Litinski（2019）の誤り予算の再実装
 公開コード（github.com/litinski/magicstates、Apache-2.0）は実行せずに読んで再実装した（`msd_noisy_lib`）。そのノートブックに保存されている出力（15-to-1 の 1 段 4 件、(15-to-1)×(15-to-1) の 2 段 4 件）を、出力誤り（有効数字 2 桁）・量子ビット数・code cycle 数（小数 1 桁）で再現することを確認する（128 ビット演算）。'''),
     code(r'''LIT_PUBLISHED = [  # (args, output error, qubits, code cycles) as printed in Python/magicstates.ipynb

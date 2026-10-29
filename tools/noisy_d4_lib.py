@@ -116,6 +116,177 @@ PAULI_CHOICES = {k: [''.join(p) for p in itertools.product('IXYZ', repeat=k) if 
                  for k in (1, 2, 3)}
 
 
+# ------------------------------------------------------------------ parallel FSC schedule
+_FSC_SCHED = {}
+
+
+def _fsc_checks(P):
+    """[(type 'X'|'Z', ancilla, label, [data qubits])] of one FSC round (frozen qubits removed)."""
+    lat, cd = P.lat, P.fsc
+    out = []
+    for lab, op in cd.xgens:
+        _, v, cols = lab
+        qs = []
+        for ch in cols:
+            cc = CNAME.index(ch)
+            qs += sorted({lat.q(e, cc) for e in lat.incident(v)} - P.frozen)
+        out.append(('X', P.anc[lab], lab, qs))
+    for lab, (l2, rows) in zip(cd.zlabels, lat.z_checks(cd.colours)):
+        if P._is_frozen_check(lab):
+            continue
+        out.append(('Z', P.anc[lab], lab, sorted(set(rows) - P.frozen)))
+    return out
+
+
+def _fsc_anneal(P, checks, T, seed, iters):
+    """Assign a time slot 0..T-1 to every (check, data qubit) CNOT such that (i) no ancilla and no data qubit
+    is used twice in a slot and (ii) for every X check A and Z check B the number of shared qubits on
+    which B's CNOT precedes A's is even (so all checks can be measured at the same time).  Start: the
+    direction-based order of the bulk (X stars E,N,S,W = 0,1,2,3; Z plaquettes E,S,N,W = 0,1,2,3, one of
+    the 16 compatible bulk orders); simulated annealing fixes the boundary (weight-6 X^r X^b and
+    weight-2 Z^r Z^b checks of L_rb)."""
+    lat = P.lat
+    XO, ZO = {'E': 0, 'W': 3, 'N': 1, 'S': 2}, {'S': 1, 'N': 2, 'W': 3, 'E': 0}
+    rng = np.random.default_rng(seed)
+    var, slot = [], []
+    for ci, (typ, anc, lab, qs) in enumerate(checks):
+        for q in qs:
+            k, x, y = lat.edges[q // 3]
+            if typ == 'X':
+                d = ('E' if x == lab[1][0] else 'W') if k == 'h' else ('N' if y == lab[1][1] else 'S')
+                s0 = XO[d]
+            elif lab[0] == 'plaq':
+                d = ('S' if y == lab[1][1] else 'N') if k == 'h' else ('W' if x == lab[1][0] else 'E')
+                s0 = ZO[d]
+            else:
+                s0 = 0
+            var.append((ci, q)); slot.append(s0)
+    slot = np.array(slot)
+    by_check, by_qubit = {}, {}
+    for i, (ci, q) in enumerate(var):
+        by_check.setdefault(ci, []).append(i); by_qubit.setdefault(q, []).append(i)
+    pairs = {}
+    for q, idx in by_qubit.items():
+        xs = [i for i in idx if checks[var[i][0]][0] == 'X']
+        zs = [i for i in idx if checks[var[i][0]][0] == 'Z']
+        for a_ in xs:
+            for b_ in zs:
+                pairs.setdefault((var[a_][0], var[b_][0]), []).append((a_, b_))
+    pairs = list(pairs.values())
+    pv = {}
+    for k, pl in enumerate(pairs):
+        for a_, b_ in pl:
+            pv.setdefault(a_, []).append(k); pv.setdefault(b_, []).append(k)
+    bad = lambda k: sum(slot[b_] < slot[a_] for a_, b_ in pairs[k]) % 2
+    conf = lambda i: (sum(slot[j] == slot[i] for j in by_check[var[i][0]] if j != i)
+                      + sum(slot[j] == slot[i] for j in by_qubit[var[i][1]] if j != i))
+    local = lambda i: conf(i) + sum(bad(k) for k in pv.get(i, []))
+    total = lambda: sum(conf(i) for i in range(len(var))) // 2 + sum(bad(k) for k in range(len(pairs)))
+    cost, temp = total(), 1.0
+    for it in range(iters):
+        if cost == 0:
+            break
+        i = int(rng.integers(len(var)))
+        if local(i) == 0 and rng.random() < 0.9:
+            continue
+        old, before = slot[i], local(i)
+        slot[i] = rng.integers(T)
+        dlt = local(i) - before
+        if dlt <= 0 or rng.random() < np.exp(-dlt / temp):
+            cost += dlt
+        else:
+            slot[i] = old
+        if it % 20000 == 0:
+            cost, temp = total(), max(0.05, temp * 0.85)
+    return var, slot, total()
+
+
+def fsc_memory_circuit(P, sched, basis, rounds, p):
+    """stim memory experiment of the FSC with the parallel schedule (validation): data in |+> (X) or |0>
+    (Z), `rounds` rounds, final data measurement; observable = logical X (t_log) or a logical Z.  Noise:
+    DEPOLARIZE2(p) after every CNOT, flips p on ancilla reset / before measurement / final data."""
+    checks, T, layers = sched['checks'], sched['T'], sched['layers']
+    data = sorted({q for typ, anc, lab, qs in checks for q in qs})
+    idx = {q: i for i, q in enumerate(data)}
+    t_log = [int(q) for q in np.nonzero(P.fsc.t_log)[0]]
+    Hx = np.array([[1 if q in qs else 0 for q in data] for typ, anc, lab, qs in checks if typ == 'X'], dtype=np.uint8)
+    tv = np.array([1 if q in t_log else 0 for q in data], dtype=np.uint8)
+    zl = next([data[i] for i in np.nonzero(v)[0]] for v in f2_nullspace(Hx) if int(v.astype(int) @ tv.astype(int)) % 2)
+    xa = [anc for typ, anc, lab, qs in checks if typ == 'X']
+    za = [anc for typ, anc, lab, qs in checks if typ == 'Z']
+    nX, nZ = len(xa), len(za)
+    cir = stim.Circuit()
+    cir.append('RX' if basis == 'X' else 'R', data)
+    for r in range(rounds):
+        cir.append('RX', xa); cir.append('R', za)
+        if p:
+            cir.append('Z_ERROR', xa, p); cir.append('X_ERROR', za, p)
+        cir.append('TICK')
+        for t in range(T):
+            tg = []
+            for typ, anc, q in layers[t]:
+                tg += [anc, q] if typ == 'X' else [q, anc]
+            if tg:
+                cir.append('CX', tg)
+                if p:
+                    cir.append('DEPOLARIZE2', tg, p)
+            cir.append('TICK')
+        if p:
+            cir.append('Z_ERROR', xa, p); cir.append('X_ERROR', za, p)
+        cir.append('MX', xa); cir.append('M', za)
+        nm = nX + nZ
+        for k in range(nX):
+            if r:
+                cir.append('DETECTOR', [stim.target_rec(-nm + k), stim.target_rec(-2 * nm + k)])
+            elif basis == 'X':
+                cir.append('DETECTOR', [stim.target_rec(-nm + k)])
+        for k in range(nZ):
+            if r:
+                cir.append('DETECTOR', [stim.target_rec(-nZ + k), stim.target_rec(-nZ - nm + k)])
+            elif basis == 'Z':
+                cir.append('DETECTOR', [stim.target_rec(-nZ + k)])
+    if p:
+        cir.append('Z_ERROR' if basis == 'X' else 'X_ERROR', data, p)
+    cir.append('MX' if basis == 'X' else 'M', data)
+    nd = len(data)
+    off = 0 if basis == 'X' else nX
+    for k, (anc, qs) in enumerate([(anc, qs) for typ, anc, lab, qs in checks if typ == basis]):
+        cir.append('DETECTOR', [stim.target_rec(-nd + idx[q]) for q in qs] + [stim.target_rec(-nd - (nX + nZ) + off + k)])
+    cir.append('OBSERVABLE_INCLUDE', [stim.target_rec(-nd + idx[q]) for q in (t_log if basis == 'X' else zl)], 0)
+    return cir
+
+
+def fsc_parallel_schedule(P, T=6, max_seeds=30, iters=3000000):
+    """Measure all FSC checks at the same time in T CNOT layers (round = T + 2 time steps; T = 6 is the
+    minimum because the X^r X^b checks of L_rb have weight 6; the bulk alone would need 4).  The slot
+    assignment is searched (deterministic seeds) and ACCEPTED ONLY IF the stim memory experiments in both
+    bases are deterministic without noise and have circuit-level distance >= L (no harmful hook errors).
+    Cached per L.  Returns dict(T, checks, layers[t] = [(type, ancilla, data qubit)], seed, distance)."""
+    L = P.L
+    if L in _FSC_SCHED:
+        return _FSC_SCHED[L]
+    checks = _fsc_checks(P)
+    for seed in range(max_seeds):
+        var, slot, cost = _fsc_anneal(P, checks, T, seed, iters)
+        if cost:
+            continue
+        layers = [[] for _ in range(T)]
+        for i, (ci, q) in enumerate(var):
+            layers[int(slot[i])].append((checks[ci][0], checks[ci][1], q))
+        sch = dict(T=T, checks=checks, layers=layers, seed=seed)
+        ok, dist = True, {}
+        for basis in 'XZ':
+            s0 = fsc_memory_circuit(P, sch, basis, 3, 0.0).compile_detector_sampler(seed=1).sample(20, append_observables=True)
+            c1 = fsc_memory_circuit(P, sch, basis, max(L, 2), 1e-3)
+            dist[basis] = len(c1.detector_error_model(decompose_errors=True).shortest_graphlike_error())
+            ok &= (not s0.any()) and dist[basis] >= L
+        if ok:
+            sch['distance'] = dist
+            _FSC_SCHED[L] = sch
+            return sch
+    raise RuntimeError(f'no valid parallel FSC schedule found for L={L}')
+
+
 # ------------------------------------------------------------------ the noisy protocol circuit
 class D4SwitchingCircuit:
     """Time-step level description of the noisy KZH protocol on the bounded square lattice.
@@ -130,7 +301,7 @@ class D4SwitchingCircuit:
     Qubits are re-indexed compactly: data (non-frozen r,g,b) first, then ancillas.
     sequential=True measures the gadgets of a commuting class one after another (validation only)."""
 
-    def __init__(self, L, R0, Rin, Rout, sequential=False, n_pre_u=1):
+    def __init__(self, L, R0, Rin, Rout, sequential=False, n_pre_u=2, fsc_schedule='classes'):
         self.n_pre_u = n_pre_u
         P = D4Protocol(L)
         lat = P.lat
@@ -168,8 +339,21 @@ class D4SwitchingCircuit:
             return moms
         # D4 rounds: Pauli Z checks first, then (after the real-time flux correction) the X-type
         # Clifford stabilizers, so that fluxes detected by the Z checks are removed before they meet CCZs
-        self.round_moms = {'FSC': round_moments('FSC'), 'D4z': round_moments('D4', 'Z'),
-                           'D4x': round_moments('D4', 'X')}
+        if fsc_schedule == 'parallel' and not sequential:
+            # all FSC checks at once: ancilla init, 6 CNOT layers (verified order, fsc_parallel_schedule), measure
+            fs = fsc_parallel_schedule(P)
+            moms = [[('RX' if typ == 'X' else 'RZ', c[anc]) for typ, anc, lab, qs in fs['checks']]]
+            for t in range(fs['T']):
+                moms.append([('CX', c[anc], c[q]) if typ == 'X' else ('CX', c[q], c[anc])
+                             for (typ, anc, q) in fs['layers'][t]])
+            moms.append([('MX' if typ == 'X' else 'MZ', c[anc]) for typ, anc, lab, qs in fs['checks']])
+            fsc_moms = moms
+        else:
+            # default: X class then Z class (14 steps).  The verified 8-step parallel schedule gives a larger
+            # output error with OUR flux decoder (its phenomenological error model does not represent the
+            # hook errors that the interleaving splits across rounds), so it is used only as a sensitivity
+            fsc_moms = round_moments('FSC')
+        self.round_moms = {'FSC': fsc_moms, 'D4z': round_moments('D4', 'Z'), 'D4x': round_moments('D4', 'X')}
         self.anc = {code: sorted({c[g[0][1]] for g in gadgets[code]}) for code in gadgets}
         self.U_moms = [[cv(g) for g in layer] for layer in class_layers([P.U_gates()])]
         # ---- switch-out data: S^g generators, Gamma (g configuration -> kappa), CZ^{r,b} pairs
@@ -538,6 +722,7 @@ class TrueSim:
 
 # ------------------------------------------------------------------ compiled protocol (fast Monte Carlo)
 _KIND = {'X': 0, 'Z': 1, 'D1': 2, 'D2': 3, 'D3': 4}
+_STIM1 = {'H': 'H', 'S': 'S', 'SDG': 'S_DAG', 'X': 'X', 'Y': 'Y', 'Z': 'Z'}     # single-qubit Cliffords -> stim
 
 
 class CompiledMoment:
@@ -1264,11 +1449,11 @@ class D4Experiment:
     """Noisy KZH protocol + decoders.  run(shots) returns per-shot logical infidelity samples
     (0, 1/2 or 1; Takada Sec. VI D with the infidelity (1 - <H>)/2 of the output) and diagnostics."""
 
-    def __init__(self, L, R0, Rin, Rout, noise, delay=0, pre_u_age=0, n_pre_u=1, flux_informed=True,
-                 quiet_window=False):
+    def __init__(self, L, R0, Rin, Rout, noise, delay=0, pre_u_age=0, n_pre_u=2, flux_informed=True,
+                 quiet_window=False, fsc_schedule='classes'):
         self.pre_u_age = pre_u_age
         self.flux_informed = flux_informed
-        self.circ = D4SwitchingCircuit(L, R0, Rin, Rout, n_pre_u=n_pre_u)
+        self.circ = D4SwitchingCircuit(L, R0, Rin, Rout, n_pre_u=n_pre_u, fsc_schedule=fsc_schedule)
         self.comp = CompiledProtocol(self.circ, noise)
         self.noise = noise
         self.flux = FluxDecoder(self.comp, delay=delay)

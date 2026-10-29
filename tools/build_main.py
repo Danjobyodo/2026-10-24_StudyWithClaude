@@ -289,10 +289,13 @@ plt.tight_layout(); plt.savefig(f'{FIGURES}/d4_logical_error{OUT_SUFFIX}.png', d
     md(r'''
 ### II-3. 資源（同じ回路から数える）
 量子ビット数（ピーク）と時間ステップ数を、シミュレーションに使ったのと同じ回路（$\kappa_0=\kappa_{\rm in}=\kappa_{\rm out}=1$）から $d=3,\dots,11$ で数え、$d$ の多項式に当てはめて大きな $d$ に延長する（$d=3..11$ で直接数えた値と一致することを確認）。体積は「各ブロックで使う量子ビット数 × そのブロックの時間ステップ数」の和（雑音なしの最終ラウンドは含めない）。switch-out は $g$ の読み出し 1 ステップ＋補正 CZ の固定スケジュールの層数（測定結果によらない最悪値。シミュレーションの仮想的な遅延測定のモーメントは時間に数えない：`block_steps`）。
+**感度**：FSC のラウンドを、検証済みの並列スケジュール（全検査を同時に測る 8 ステップ：`validation.ipynb` N10）で数えた場合の費用も `*_fsc8` として示す。**時間・体積だけの感度**であり、その誤り率はシミュレーションしていない（本研究の flux 復号器では並列スケジュールの方が $\varepsilon_K$ が大きくなったため、本番は 14 ステップのスケジュールでシミュレーションしている：`docs/methods.md` §4.1）。
 **含めていない費用**：FSC から通常の回転表面符号パッチへの変換（未構成、[KZH] にも記述なし）、古典処理の待ち時間、フィードフォワードの $X$ 補正（雑音なし・時間 0 の理想化）。一方、測定スケジュールは最適化していない（FSC 14 ステップ/ラウンド、表面符号は 6）。前者は費用の過小評価、後者は過大評価の要因で、全体として一方向に「保守的」とは言えない。
 '''),
     code(r'''
-def kobayashi_counts(d):
+def kobayashi_counts(d, fsc_steps=None):
+    """fsc_steps: count every FSC round as this many time steps (sensitivity: 8 = the verified parallel
+    schedule, validation N10) instead of the simulated 14-step schedule."""
     circ = D4SwitchingCircuit(d, d, d, d)
     vol, steps = 0, 0
     for blk in circ.blocks:
@@ -305,7 +308,7 @@ def kobayashi_counts(d):
             active = set(circ.data_all) | set(circ.anc['D4'])
         else:
             active = set(circ.data_all)                   # U and the switch-out
-        n_steps = block_steps(circ, blk)
+        n_steps = block_steps(circ, blk) if (fsc_steps is None or code_ != 'FSC' or blk['name'][0] == 'FIN') else fsc_steps
         vol += len(active) * n_steps
         steps += n_steps
     return dict(d=d, qubits=circ.nq, time_steps=steps, volume=vol, switch_out_steps=circ.so_steps)
@@ -315,7 +318,13 @@ def kobayashi_cost(d):
     return {k: float(np.polyval(POLY[k], d)) for k in POLY}
 KC['volume_poly'] = [kobayashi_cost(d)['volume'] for d in KC.d]
 assert np.allclose(KC.volume_poly, KC.volume) and np.allclose([kobayashi_cost(d)['time_steps'] for d in KC.d], KC.time_steps)
+KC8 = pd.DataFrame([kobayashi_counts(d, fsc_steps=8) for d in (3, 5, 7, 9, 11)])
+POLY8 = {k: np.polyfit(KC8.d, KC8[k], 3 if k == 'volume' else 2) for k in ('qubits', 'time_steps', 'volume')}
+def kobayashi_cost_fsc8(d):
+    return {k: float(np.polyval(POLY8[k], d)) for k in POLY8}
+KC['time_steps_fsc8'], KC['volume_fsc8'] = KC8.time_steps, KC8.volume
 print({k: np.round(v, 2) for k, v in POLY.items()})
+print('with 8-step FSC rounds:', {k: np.round(v, 2) for k, v in POLY8.items()})
 KC
 '''),
     md(r'''
@@ -370,6 +379,7 @@ plt.tight_layout(); plt.savefig(f'{FIGURES}/cost_comparison{OUT_SUFFIX}.png', dp
 * Kobayashi 方式：要求を満たす最小の $d$（$d\le61$ の範囲で探索）。`kobayashi_*` は本来のシミュレーションのモデル（bulk＋窓の項）、`kobayashi_diag_*` は診断（窓の雑音なし）、`kobayashi_altW_*` は窓の項の $d$ 依存を許したモデル（感度）。
 * `status`：ブートストラップの複製のうち、$d\le61$ で要求に届く割合が 84% 以上なら `reached`、16% 以下なら `not_reached_model`（このモデル・探索範囲では届かない。方式として不可能という意味ではない）、その間は `unresolved`。体積の `_16` / `_84` は届いた複製の体積の 16〜84% 範囲。
 * `d_extrapolated`：選ばれた $d$ がシミュレーションした最大の $d$ を超える（$d$ 方向の外挿）。`p_extrapolated`：$p$ が bulk の当てはめに使った最小の $p$ より小さい（$p$ 方向の外挿）。外挿でなくても値はモデルによる推定であり、その要求誤りを直接観測したものではない。
+* `kobayashi_diag_volume_fsc8`：同じ $d$ で FSC のラウンドを 8 ステップで数えた体積（時間だけの感度、II-3）。
 * 各行に入力データの来歴（`data_mode`, `mc_sha256`, `cal_sha256`, `mc_run_ids`, ...）を記録する。
 '''),
     code(r'''
@@ -408,12 +418,15 @@ for s in SCENARIOS:
 CMP = pd.DataFrame(rows)
 for pre in ('kobayashi', 'kobayashi_diag', 'kobayashi_altW'):
     CMP[f'ratio_{pre}_over_litinski'] = CMP[f'{pre}_volume'] / CMP.litinski_volume
+CMP['kobayashi_diag_volume_fsc8'] = [kobayashi_cost_fsc8(d)['volume'] if d != '—' else np.nan for d in CMP.kobayashi_diag_d]
+CMP['ratio_kobayashi_diag_fsc8_over_litinski'] = CMP.kobayashi_diag_volume_fsc8 / CMP.litinski_volume
 for k, v in PROV.items():
     CMP[k] = v
 pd.set_option('display.max_colwidth', 40)
 CMP[['scenario', 'p', 'target', 'litinski_protocol', 'litinski_volume', 'kobayashi_status', 'kobayashi_volume',
      'kobayashi_altW_status', 'kobayashi_diag_status', 'kobayashi_diag_d', 'kobayashi_diag_d_extrapolated', 'p_extrapolated',
-     'ratio_kobayashi_diag_over_litinski', 'kobayashi_diag_volume_16', 'kobayashi_diag_volume_84']]
+     'ratio_kobayashi_diag_over_litinski', 'kobayashi_diag_volume_16', 'kobayashi_diag_volume_84',
+     'ratio_kobayashi_diag_fsc8_over_litinski']]
 '''),
     md(r'''
 ### IV-3. Kobayashi 方式が同じ体積に収まるために必要な改善（診断値）
