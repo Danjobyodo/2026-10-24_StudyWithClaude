@@ -316,7 +316,10 @@ def kobayashi_counts(d, fsc_steps=None):
             active = set(circ.data_all) | set(circ.anc['D4'])
         else:
             active = set(circ.data_all)                   # U and the switch-out
-        n_steps = block_steps(circ, blk) if (fsc_steps is None or code_ != 'FSC' or blk['name'][0] == 'FIN') else fsc_steps
+        n_steps = block_steps(circ, blk)
+        if fsc_steps is not None and code_ == 'FSC':
+            # replace the 14-step round by fsc_steps; keep extra moments of the block (data preparation in S0 r=1)
+            n_steps += fsc_steps - len(circ.round_moms['FSC'])
         vol += len(active) * n_steps
         steps += n_steps
     return dict(d=d, qubits=circ.nq, time_steps=steps, volume=vol, switch_out_steps=circ.so_steps)
@@ -331,6 +334,7 @@ POLY8 = {k: np.polyfit(KC8.d, KC8[k], 3 if k == 'volume' else 2) for k in ('qubi
 def kobayashi_cost_fsc8(d):
     return {k: float(np.polyval(POLY8[k], d)) for k in POLY8}
 KC['time_steps_fsc8'], KC['volume_fsc8'] = KC8.time_steps, KC8.volume
+assert np.allclose(KC.time_steps - KC.time_steps_fsc8, 2 * KC.d * (len(D4SwitchingCircuit(3, 1, 1, 1).round_moms['FSC']) - 8))
 print({k: np.round(v, 2) for k, v in POLY.items()})
 print('with 8-step FSC rounds:', {k: np.round(v, 2) for k, v in POLY8.items()})
 KC
